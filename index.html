@@ -1468,7 +1468,7 @@ function tourEnd(state) {
   c.hist.forEach(function (h, ri) { h.ties.forEach(function (m) { [m[0], m[1]].forEach(function (id) { M[id] = (M[id] || 0) + 1; ST[id] = Math.max(ST[id] || 0, ri < 3 ? 0 : ri - 2); }); }); });
   ST[c.champ] = 4;
   var code = function (id) { return state.teams[id].nt; };
-  var res = { g: euTab(c).map(function (g) { return g.map(function (x) { return { c: code(x.id), sp: x.sp, tf: x.tf, ta: x.ta, pts: x.pts }; }); }), md: c.hist.map(function (h) { return { n: h.n, t: h.ties.map(function (m) { return [code(m[0]), code(m[1]), m[2], m[3], m[5] ? 1 : m[6] ? 2 : 0]; }) }; }), champ: code(c.champ) };
+  var res = { g: euTab(c).map(function (g) { return g.map(function (x) { return { c: code(x.id), sp: x.sp, tf: x.tf, ta: x.ta, pts: x.pts }; }); }), md: c.hist.map(function (h) { return { n: h.n, t: h.ties.map(function (m) { return [code(m[0]), code(m[1]), m[2], m[3], m[5] ? 1 : m[6] ? 2 : 0, m[4] !== undefined && m[4] >= 0 ? code(m[4]) : null]; }) }; }), champ: code(c.champ) };
   var coach = null; if (T.cu !== undefined) { var st = ST[T.nt] || 0; coach = { code: code(T.nt), st: st, fired: st === 0 }; (state.ntc = state.ntc || []).push({ y: T.y, k: T.kind, c: code(T.nt), st: st }); repAdd(state, [-5, 2, 5, 8, 15][st]); if (coach.fired) { state.ntj = null; delete state.ntb; } else if (state.ntb && state.ntb.p !== undefined) { state.ntb.p = clamp(state.ntb.p + [0, 5, 12, 20, 35][st], 0, 100); state.ntb.ult = 0; } state.uid = T.cu; }
   state.teams.forEach(function (t) { if (t.lg <= 2) t.pl.forEach(function (p) { by[p.i] = [p, t]; }); });
   var rep = [], bonus = 0;
@@ -1493,7 +1493,7 @@ function tourInfo(state) {
   var T = state.tour; if (!T) return null;
   if (!T.on) return T;
   var c = T.c, code = function (id) { return state.teams[id].nt; };
-  return { on: true, kind: T.kind, y: T.y, mine: T.mine, nt: T.nt, cu: T.cu, r: c.r, out: c.out, nm: c.nm, tie: tourTie(state), g: euTab(c).map(function (g) { return g.map(function (x) { return { id: x.id, c: code(x.id), sp: x.sp, tf: x.tf, ta: x.ta, pts: x.pts }; }); }), md: c.hist.map(function (h) { return { n: h.n, t: h.ties.map(function (m) { return [code(m[0]), code(m[1]), m[2], m[3], m[5] ? 1 : m[6] ? 2 : 0]; }) }; }), next: c.r <= 5 ? c.ties.map(function (m) { return [code(m[0]), code(m[1])]; }) : [] };
+  return { on: true, kind: T.kind, y: T.y, mine: T.mine, nt: T.nt, cu: T.cu, r: c.r, out: c.out, nm: c.nm, tie: tourTie(state), g: euTab(c).map(function (g) { return g.map(function (x) { return { id: x.id, c: code(x.id), sp: x.sp, tf: x.tf, ta: x.ta, pts: x.pts }; }); }), md: c.hist.map(function (h) { return { n: h.n, t: h.ties.map(function (m) { return [code(m[0]), code(m[1]), m[2], m[3], m[5] ? 1 : m[6] ? 2 : 0, m[4] !== undefined && m[4] >= 0 ? code(m[4]) : null]; }) }; }), next: c.r <= 5 ? c.ties.map(function (m) { return [code(m[0]), code(m[1])]; }) : [] };
 }
 function ntOffer(state, title) {
   if (state.ntj || state.nto || state.rep < 45) return;
@@ -4436,7 +4436,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '21.11. 12:31';
+var BUILD = '21.11. 13:37';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
@@ -5776,7 +5776,7 @@ function tourCalc(G, md, upto) {
   md.slice(0, upto).forEach(function (d) { d.t.forEach(function (m) { var a = R[m[0]], b = R[m[1]]; if (!a || !b) return; a.sp++; b.sp++; a.tf += m[2]; a.ta += m[3]; b.tf += m[3]; b.ta += m[2]; if (m[2] > m[3]) a.pts += 3; else if (m[2] < m[3]) b.pts += 3; else { a.pts++; b.pts++; } }); });
   return G.map(function (g) { return g.map(function (x) { return R[x.c]; }).sort(function (x, y) { return y.pts - x.pts || (y.tf - y.ta) - (x.tf - x.ta) || y.tf - x.tf; }); });
 }
-function tourMd(d, hl) { return '<p class="lbl" style="margin:6px 0 0">' + esc(d.n.toUpperCase()) + '</p><div class="list">' + d.t.map(function (m) { var w = m[4] === 1 ? '*' : m[4] === 2 ? ' n.V.' : ''; return '<div class="tie' + (hl[m[0]] || hl[m[1]] ? ' me' : '') + '" style="display:grid;grid-template-columns:1fr 54px 1fr;align-items:center;padding:8px 6px;background:var(--panel);font-size:14px' + (hl[m[0]] || hl[m[1]] ? ';outline:2px solid var(--yellow);outline-offset:-2px' : '') + '"><span style="text-align:right">' + esc(natName(m[0])) + ' ' + flag(m[0]) + '</span><b style="text-align:center">' + (m.length > 2 ? m[2] + ':' + m[3] + w : '–') + '</b><span>' + flag(m[1]) + esc(natName(m[1])) + '</span></div>'; }).join('') + '</div>'; }
+function tourMd(d, hl) { return '<p class="lbl" style="margin:6px 0 0">' + esc(d.n.toUpperCase()) + '</p><div class="list">' + d.t.map(function (m) { var w = m[4] === 1 ? '*' : m[4] === 2 ? ' n.V.' : ''; return '<div class="tie' + (hl[m[0]] || hl[m[1]] ? ' me' : '') + '" style="display:grid;grid-template-columns:1fr 54px 1fr;align-items:center;padding:8px 6px;background:var(--panel);font-size:14px' + (hl[m[0]] || hl[m[1]] ? ';outline:2px solid var(--yellow);outline-offset:-2px' : '') + '"><span style="text-align:right' + (m[4] === 1 && m[5] ? ';' + penSt(m[5] === m[0]) : '') + '">' + esc(natName(m[0])) + ' ' + flag(m[0]) + '</span><b style="text-align:center">' + (m.length > 2 ? m[2] + ':' + m[3] + w : '–') + '</b><span' + (m[4] === 1 && m[5] ? ' style="' + penSt(m[5] === m[1]) + '"' : '') + '>' + flag(m[1]) + esc(natName(m[1])) + '</span></div>'; }).join('') + '</div>'; }
 function vTour() {
   var T = FM.tourInfo(state); if (!T) return sub('Turnier');
   var full = (T.kind === 'EM' ? 'Europameisterschaft ' : 'Weltmeisterschaft ') + T.y, hl = {}, h = '<div class="hdr"><div class="title grow">' + full + '</div></div>';
@@ -5803,7 +5803,7 @@ function vTour() {
     R.md.slice(3).reverse().forEach(function (d) { h += tourMd(d, hl); });
     R.g.forEach(function (g, i) { h += '<p class="lbl" style="margin:6px 0 0">GRUPPE ' + 'ABCD'.charAt(i) + '</p>' + tourTab(g, hl); });
     h += '<details class="inf" style="margin:0"><summary>Alle Gruppenspiele</summary>' + R.md.slice(0, 3).map(function (d) { return tourMd(d, hl); }).join('') + '</details>';
-    return h + '<p class="hint" style="margin:0">* nach Elfmeterschießen · n.V. = nach Verlängerung · farbig hervorgehoben: Nationen mit Spielern deines Vereins</p>' + done;
+    return h + '<p class="hint" style="margin:0">* nach Elfmeterschießen (Sieger fett, Verlierer blass) · n.V. = nach Verlängerung · farbig hervorgehoben: Nationen mit Spielern deines Vereins</p>' + done;
   }
   var pg = Math.min(ui.tpg || 0, 7), ttl = ['Die Nominierungen', '1. Gruppenspieltag', '2. Gruppenspieltag', '3. Gruppenspieltag', 'Viertelfinale', 'Halbfinale', 'Finale', 'Bilanz'][pg];
   h += '<div class="panel" style="text-align:center"><p class="lbl" style="margin:0">' + (pg + 1) + ' / 8 · ' + ttl.toUpperCase() + '</p></div>';
@@ -5850,7 +5850,8 @@ function euGrpHtml(T, gi) {
 function euMyGrp() { var g = state.eu.g || [], r = -1; g.forEach(function (ids, i) { if (ids.indexOf(state.uid) >= 0) r = i; }); return r; }
 function tieRow(x, pen) {
   var me = x[0] === state.uid || x[1] === state.uid;
-  return '<div class="res' + (me ? ' me' : '') + '">' + tm(x[0], 'r') + '<span class="sc">' + (x.length > 2 ? x[2] + ':' + x[3] + (x[5] ? '*' : x[6] ? ' n.V.' : '') : '–') + '</span>' + tm(x[1], 'l') + '</div>';
+  var pw = x.length > 5 && x[5] && x[4] !== undefined, ws = function (h, id) { return pw ? h.replace('<span class="tmx', '<span style="' + penSt(x[4] === id) + '" class="tmx') : h; };
+  return '<div class="res' + (me ? ' me' : '') + '">' + ws(tm(x[0], 'r'), x[0]) + '<span class="sc">' + (x.length > 2 ? x[2] + ':' + x[3] + (x[5] ? '*' : x[6] ? ' n.V.' : '') : '–') + '</span>' + ws(tm(x[1], 'l'), x[1]) + '</div>';
 }
 function vCup() {
   var eu = ui.cupt === 'eu', c = eu ? state.eu : state.cup, h = sub('Pokal') + tabBar('cupt', [['cup', CUPN()], ['eu', EUN()]], ui.cupt), ct = eu ? FM.euTie(state) : FM.cupTie(state);
@@ -5901,7 +5902,7 @@ function vToto() {
   });
   return h + '</div>';
 }
-function hallRow(g) { return '<div class="res"><span>' + esc(g.a) + '</span><span class="sc">' + g.ga + ':' + g.gb + (g.pen ? '*' : '') + '</span><span>' + esc(g.b) + '</span></div>'; }
+function hallRow(g) { var wn = g.w && g.w.n ? g.w.n : g.w, st = function (n) { return g.pen && wn ? ' style="' + penSt(wn === n) + '"' : ''; }; return '<div class="res"><span' + st(g.a) + '>' + esc(g.a) + '</span><span class="sc">' + g.ga + ':' + g.gb + (g.pen ? '*' : '') + '</span><span' + st(g.b) + '>' + esc(g.b) + '</span></div>'; }
 function vHall() {
   var H = state.hall, h = sub('Hallenturnier');
   if (!H) return h + '<p class="hint" style="margin:0">Das Hallenturnier findet zur Saisonhälfte nach dem ' + FM.HN(state) + '. Spieltag statt.</p>';
@@ -5916,7 +5917,7 @@ function vHall() {
   if (ui.hallStep !== undefined && ui.hallStep < hallFlat(r).length) return hallStage(r, ui.hallStep);
   h += '<div class="panel">' + acard(r.place === 1 ? 'm_cup' : 'halle', r.place <= 4 ? r.place + '. Platz' : r.place === 5 ? 'Aus im Viertelfinale' : 'Aus im Achtelfinale', 'Hallenturnier' + (r.champ ? ' · Sieger: ' + esc(r.champ) : '')) + fx([['Preisgeld +' + money(r.prize), 1]]) + (r.who ? '<p class="hint" style="margin:6px 0 0">Gespielt haben: ' + r.who.map(esc).join(' · ') + '</p>' : '') + (r.notes || []).map(function (t) { return '<p class="hint" style="margin:6px 0 0;color:#ffd84d">' + esc(t) + '</p>'; }).join('') + '</div>';
   r.rounds.forEach(function (R, i) { h += '<p class="lbl" style="margin:' + (i ? '6px' : '0') + ' 0 0">' + R.n.toUpperCase() + '</p><div class="list">' + R.g.map(hallRow).join('') + '</div>'; });
-  h += '<p class="hint" style="margin:0">* nach Neunmeterschießen</p>';
+  h += '<p class="hint" style="margin:0">* nach Neunmeterschießen · Sieger fett, Verlierer blass</p>';
   return h;
 }
 function jobsHtml() {
@@ -6045,7 +6046,7 @@ function vTableF() {
     if (CI.win) h += '<p class="title" style="margin:0 0 8px;color:#ffd84d">Pokalsieger: ' + heldMark(c, CI.win) + esc(CI.win) + '</p>';
     else if (!CI.rd.length) h += '<p class="hint" style="margin:0">16 Mannschaften sind dabei. Das Achtelfinale wird im Herbst gespielt.</p>';
     else h += '<p class="hint" style="margin:0 0 8px">Als Nächstes: ' + CI.next + ' · noch dabei: ' + CI.left.map(esc).join(', ') + '</p>';
-    CI.rd.slice().reverse().forEach(function (R) { h += '<p class="lbl" style="margin:10px 0 4px;font-size:10px">' + R.n.toUpperCase() + '</p>'; R.ties.forEach(function (t) { h += '<div class="res"><span' + (t.w === t.a ? ' style="font-weight:700"' : '') + '>' + heldMark(c, t.a) + esc(t.a) + '</span><span class="sc">' + t.ga + ':' + t.gb + (t.pen ? '*' : '') + '</span><span' + (t.w === t.b ? ' style="font-weight:700"' : '') + '>' + heldMark(c, t.b) + esc(t.b) + '</span></div>'; }); });
+    CI.rd.slice().reverse().forEach(function (R) { h += '<p class="lbl" style="margin:10px 0 4px;font-size:10px">' + R.n.toUpperCase() + '</p>'; R.ties.forEach(function (t) { h += '<div class="res"><span' + (t.pen ? ' style="' + penSt(t.w === t.a) + '"' : t.w === t.a ? ' style="font-weight:700"' : '') + '>' + heldMark(c, t.a) + esc(t.a) + '</span><span class="sc">' + t.ga + ':' + t.gb + (t.pen ? '*' : '') + '</span><span' + (t.pen ? ' style="' + penSt(t.w === t.b) + '"' : t.w === t.b ? ' style="font-weight:700"' : '') + '>' + heldMark(c, t.b) + esc(t.b) + '</span></div>'; }); });
     if (CI.rd.some(function (R) { return R.ties.some(function (t) { return t.pen; }); })) h += '<p class="hint" style="margin:8px 0 0">* Entscheidung im Elfmeterschießen</p>';
     h += '</div>';
   }
@@ -7253,7 +7254,7 @@ function vCupResults() {
     if (m && m.st) h += statBox(m.st, m.h, m.a, m.et ? 'STATISTIK · NACH 120 MINUTEN' : 'STATISTIK', 1);
     h += '<button class="big" data-a="tournext">Weiter</button>' + cupPaper(R, m) + absentHtml() + '<p class="lbl" style="margin:0">ALLE SPIELE DER RUNDE</p><div class="list">';
     R.ties.forEach(function (x) { h += tieRow(x); });
-    return h + '</div><p class="hint" style="margin:0">* nach Elfmeterschießen · n.V. = nach Verlängerung</p><button class="big" data-a="tournext">Weiter</button>';
+    return h + '</div><p class="hint" style="margin:0">* nach Elfmeterschießen (Sieger fett, Verlierer blass) · n.V. = nach Verlängerung</p><button class="big" data-a="tournext">Weiter</button>';
   }
   if (mine && mine.length > 3) h += scoreCard(mine[0], mine[1], mine[2], mine[3], (R.grp || R.leg === 1 ? (R.won ? 'SIEG' : R.draw ? 'UNENTSCHIEDEN' : 'NIEDERLAGE') + (R.leg === 1 ? '<br>HINSPIEL' : '') + (R.grpEnd ? '<br>' + (R.grpOk ? 'VIERTELFINALE ERREICHT' : 'IN DER GRUPPE AUSGESCHIEDEN') : '') : R.won ? (R.final ? (R.eu ? 'TITEL GEWONNEN!' : 'POKALSIEG!') : 'WEITER') : 'AUSGESCHIEDEN') + (R.agg ? '<br>GESAMT ' + R.agg[0] + ':' + R.agg[1] : '') + (m.pen ? '<br>NACH ELFMETERSCHIESSEN' : ''));
   if (m && m.st) h += statBox(m.st, m.h, m.a, m.et ? 'STATISTIK · NACH 120 MINUTEN' : 'STATISTIK', 1);
@@ -7264,7 +7265,7 @@ function vCupResults() {
   h += absentHtml(); if (R.eu && state.eu.g && euMyGrp() >= 0 && (R.grp || R.grpEnd)) h += euGrpHtml(FM.euGroups(state), euMyGrp());
   h += '<p class="lbl" style="margin:0">ALLE SPIELE DER RUNDE</p><div class="list">';
   R.ties.forEach(function (x) { h += tieRow(x); });
-  h += '</div><p class="hint" style="margin:0">* nach Elfmeterschießen · n.V. = nach Verlängerung</p>' + (R.won && !R.final && !R.eu ? '<button class="big" data-a="go" data-v="draw">Zur Auslosung</button>' : '<button class="big" data-a="go" data-v="menu">Zurück ins Büro</button>');
+  h += '</div><p class="hint" style="margin:0">* nach Elfmeterschießen (Sieger fett, Verlierer blass) · n.V. = nach Verlängerung</p>' + (R.won && !R.final && !R.eu ? '<button class="big" data-a="go" data-v="draw">Zur Auslosung</button>' : '<button class="big" data-a="go" data-v="menu">Zurück ins Büro</button>');
   return h;
 }
 function seasonLabel(y) { return y + '/' + ((y + 1) % 100 < 10 ? '0' : '') + (y + 1) % 100; }
@@ -7694,6 +7695,7 @@ function custReport(D, extra) {
   if (D.err.length > 6) h += '<p class="bad">… und ' + (D.err.length - 6) + ' weitere Hinweise.</p>';
   return h;
 }
+function penSt(win) { return win ? 'font-weight:700' : 'opacity:.5'; }
 function tm(id, side, extra) { var t = FM.team(state, id), n = '<span class="nm">' + esc(t ? t.n : '?') + (extra || '') + '</span>'; return '<span class="tmx ' + side + '">' + (side === 'r' ? n + crest(id, 20) : crest(id, 20) + n) + '</span>'; }
 function sName(n) { var w = String(n || '').split(' '); return w.length > 1 ? w.slice(1).join(' ') : w[0]; }
 function goalStrip(u, pl) {
