@@ -4489,7 +4489,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '21.11. 23:03';
+var BUILD = '21.11. 23:08';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
@@ -4554,7 +4554,6 @@ function initCloud() {
 /* ---------- Ansichten ---------- */
 function go(view) {
   if (timer) { cancelAnimationFrame(timer); timer = null; }
-  if (state && (view === 'opening' || view === 'menu' || view === 'summer') && FM.tourDue(state) && state.round === 0 && !state.sacked) { FM.tourStart(state); ui.tpg = 0; persist(); view = 'tour'; }
   if (state && state.tour && state.tour.on && { tour: 1, lineup: 1, tactics: 1, match: 1, results: 1, cer: 1 }[view] !== 1) view = 'tour';
   if (state && state.ntfx && !state.live && { ntprep: 1, lineup: 1, tactics: 1, match: 1 }[view] !== 1) view = 'ntprep';
   if (view !== 'lineup' && view !== 'tactics') ui.koBack = null;
@@ -4939,7 +4938,7 @@ function vMenu() {
   if (opp) {
     var dS = FM.teamInfo(state, opp.id).str - FM.teamInfo(state, u.id).str + (home ? -2 : 2), dc = dS > 5 ? '#ff9a8f' : dS > -3 ? '#ffd84d' : '#6df09a', hI = home ? u : opp, aI = home ? opp : u;
     h += '<div class="hero"' + (ct ? ' style="background:#6a4a12;border-bottom-color:#3d2a08"' : '') + '><div class="k">' + (ct ? (isEu ? EUN() : CUPN()) + ' · ' + ct.name : (!ct && FM.isDerby(state, opp.id) ? '<b style="color:#ffd84d">DERBY</b> · ' : '') + (state.round + 1) + '. Spieltag') + ' · ' + dMt.wd + ', ' + dMt.d + '. ' + dMt.mon + ' ' + dMt.y + ' · ' + (home ? 'Heimspiel' : 'Auswärts') + '</div><div class="sbt"><div>' + crest(hI.id, 46) + '<b>' + esc(hI.n) + '</b></div><div class="vs">VS</div><div>' + crest(aI.id, 46) + '<b>' + esc(aI.n) + '</b></div></div><p class="hint" style="margin:8px 0 0;text-align:center;color:#d6e6ff"><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + dc + ';margin-right:5px"></i>' + (dS > 5 ? 'Schwerer Gegner' : dS > -3 ? 'Ausgeglichen' : 'Machbarer Gegner') + ' · ' + (opp.lg < 9 ? FM.lgName(state, opp.lg) + (opp.lg === u.lg ? ', Platz ' + FM.place(state, opp.id) : '') : 'Ausland') + '</p></div>';
-    h += '<button class="big" style="margin:-4px 0 2px" data-a="kickoff">' + (ct ? (isEu ? EUN() + ': Anpfiff' : 'Pokalspiel starten') : 'Spieltag starten') + '</button>';
+    h += '<button class="big" style="margin:-4px 0 2px" data-a="kickoff">' + (state.round === 0 && FM.tourDue(state) ? FM.tourKind(state.season) + ' starten' : (ct ? (isEu ? EUN() + ': Anpfiff' : 'Pokalspiel starten') : 'Spieltag starten')) + '</button>';
   }
   var myF = []; FM.tableX(state, u.lg, 'all').forEach(function (x) { if (x.id === u.id) myF = x.fm; });
   var nT = FM.table(state, u.lg).length;
@@ -4954,7 +4953,7 @@ function vMenu() {
   h += '<div class="sec"><h2>WETTBEWERB</h2><div class="tiles">' + tile('go', 'table', 'tabelle', 'Tabelle') + tile('go', 'fixtures', 'spielplan', 'Spielplan') + tile('go', 'cup', 'pokal', 'Pokal', '', state.cup.due || state.eu.due ? '!heute' : state.cup.won ? '~Sieger' : '') + tile('go', 'stats', 'statistik', 'Statistik') + '</div></div>';
   var hd = state.hall && state.hall.due;
   h += '<div class="sec"><h2>WEITERES</h2><div class="tiles">' + tile('go', 'toto', 'toto', 'Tippspiel', '', FM.totoComplete(state) ? '~getippt' : state.round < FM.RN(state) && !state.over ? 'tippen' : '') + (state.hall ? tile('go', 'hall', 'halle', 'Halle', '', hd ? 'offen' : '') : tile('', '', 'halle', 'Halle', 'Winter')) + tile('go', 'fame', 'ruhm', 'Ruhmeshalle') + tile('go', 'nat', 'pokal', 'Nationalelf', '', state.ntf && state.ntj ? '!Länderspiel' : state.nto ? 'Angebot' : state.ntj ? '~' + natName(state.ntj) : '') + tile('go', 'clubs', 'stadion', 'Vereine', '', (function () { var n = (FM.me(state).inv || []).length + (FM.mePct(state) ? 1 : 0); return n ? '~' + n : ''; })()) + tile('go', 'private', 'me_tile', 'Privat', '', FM.me(state).cash >= 8000 && !FM.me(state).own.length ? 'Geld da' : '') + '</div></div>';
-  if (!opp) h += '<button class="big" data-a="kickoff">' + (ct ? (isEu ? EUN() + ': Anpfiff' : 'Pokalspiel starten') : 'Spieltag starten') + '</button>';
+  if (!opp) h += '<button class="big" data-a="kickoff">' + (state.round === 0 && FM.tourDue(state) ? FM.tourKind(state.season) + ' starten' : (ct ? (isEu ? EUN() + ': Anpfiff' : 'Pokalspiel starten') : 'Spieltag starten')) + '</button>';
   return h;
 }
 function fitBar(t) { t = Math.round(t); return '<span class="bar" title="Frische ' + t + '"><i class="' + (t < 55 ? 'lo' : t < 75 ? 'm' : '') + '" style="width:' + t + '%"></i></span>'; }
@@ -8379,6 +8378,7 @@ app.addEventListener('click', function (ev) {
     if (state.sacked) return go('sacked');
     if (state.bq) { toast('Der Präsident will dich sprechen. Vorher wird nicht gespielt.'); return go('board'); }
     ui.bmsg = null;
+    if (state.round === 0 && FM.tourDue(state)) { if (state.open) { toast('Erst die Vorstandssitzung, dann geht es zum Turnier.'); return go('opening'); } FM.tourStart(state); ui.tpg = 0; persist(); return go('tour'); }
     if (!FM.lineupValid(u)) { toast('Die Startelf ist nicht vollständig. Verletzte und gesperrte Spieler müssen ersetzt werden.'); ui.lm = 'set'; go('lineup'); ui.koBack = 'kickoff'; return render(); }
     if (!state.sp && state.spo) { toast('Vor dem Spiel fehlt noch ein Trikotsponsor.'); ui.spt = 'trikot'; return go('sponsors'); }
     var LV = state.cup.due && FM.cupTie(state) ? FM.startCup(state) : state.eu.due && FM.euTie(state) ? FM.startEu(state) : FM.startRound(state);
