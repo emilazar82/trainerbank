@@ -2456,7 +2456,7 @@ function extDeal(state, id, years, wi, fi) {
 function extend(state, id, years, wi, fi) {
   var p = findP(state.teams[state.uid], id);
   if (!p) return 'Spieler nicht gefunden.';
-  years = clamp(Math.round(+years) || (p.a >= 33 ? 1 : 2), 1, 4);
+  years = p.a >= 33 ? 1 : clamp(Math.round(+years) || 2, 1, 4);
   var O = extDeal(state, id, years, wi, fi); if (O.no) return O.no;
   if (state.cash < O.fee) return 'Dafür reicht die Kasse nicht.';
   if (Math.random() >= O.pr) {
@@ -4489,7 +4489,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '21.11. 21:53';
+var BUILD = '21.11. 22:55';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
