@@ -2285,7 +2285,11 @@ function boardGoal(state) {
   var mine = str(u), rank = 1; state.teams.forEach(function (t) { if (t.lg === u.lg && t.id !== u.id && str(t) > mine) rank++; });
   var nxt = 0; state.teams.forEach(function (t) { if (t.lg === u.lg && t.id !== u.id) nxt = Math.max(nxt, str(t)); });
   if (u.lg === 0 && rank === 1 && mine - nxt >= 3) return 1;
-  return clamp(rank - (rank <= 2 ? 0 : 1) + (rank >= NT(state) - 5 ? 1 : 0) - (state.inv ? 2 : 0), u.lg > 0 ? 3 : 1, rank >= NT(state) - 2 ? NT(state) - 2 : NT(state) - 3);
+  var g = clamp(rank - (rank <= 2 ? 0 : 1) + (rank >= NT(state) - 5 ? 1 : 0) - (state.inv ? 2 : 0), u.lg > 0 ? 3 : 1, rank >= NT(state) - 2 ? NT(state) - 2 : NT(state) - 3);
+  // Gleiche Liga, gleicher Verein: Das Ziel liegt höchstens zwei Plätze unter dem letzten Platz
+  var H = state.hist || [], L = H[H.length - 1], CS = (state.car && state.car.se) || [], LC = CS[CS.length - 1];
+  if (L && L.s === state.season - 1 && L.lg === u.lg && (!LC || LC.c === u.n)) g = Math.max(u.lg > 0 ? 3 : 1, Math.min(g, L.pl + 2));
+  return g;
 }
 function goalMid(state) {
   var u = state.teams[state.uid], RNn = RN(state), r = state.round; if (r <= 0 || r >= RNn) return boardGoal(state);
@@ -4189,7 +4193,7 @@ function finishSeason(state) {
   sum.board = { goal: goalText(sum.lg, B.goal, state), ok: okGoal, conf: B.conf, sacked: !!state.sacked };
   carSeason(state, sum, okGoal); meBonus(state, sum, okGoal, !!(state.cup && state.cup.won), !!(state.eu && state.eu.won)); meSeason(state, sum);
   if (!state.sacked) B.conf = Math.round((B.conf + 60) / 2);
-  state.hist.push({ s: state.season, lg: sum.lg, pl: sum.place, ln: lgName(state, sum.lg) });
+  state.hist.push({ s: state.season, lg: sum.lg, pl: sum.place, ln: lgName(state, sum.lg), g: state.board && state.board.goal });
   var mv3 = moves.map(function (m) { return [m[0], m[0].lg, m[1]]; });
   moves.forEach(function (m) { m[0].lg = m[1]; });
   var Y = state.youth; sum.yLoan = [];
@@ -4436,7 +4440,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '21.11. 13:37';
+var BUILD = '21.11. 20:08';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
@@ -7271,7 +7275,7 @@ function vCupResults() {
 function seasonLabel(y) { return y + '/' + ((y + 1) % 100 < 10 ? '0' : '') + (y + 1) % 100; }
 function vOpening() {
   var u = FM.userTeam(state), B = state.board, H = state.hist, CS = (state.car && state.car.se) || [], was = CS.length && CS[CS.length - 1].s === state.season - 1 && CS[CS.length - 1].c === u.n, last = H.length && (!state.nj || was) ? H[H.length - 1] : null, sl = seasonLabel(state.season), early = state.round <= 5;
-  var t1 = !last ? (u.lg === 0 ? (B.goal <= 3 ? 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Dieser Verein gehört nach ganz oben, und daran werden Sie gemessen.' : B.goal <= 8 ? 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Wir wollen uns in der oberen Tabellenhälfte festsetzen.' : 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Für uns zählt zuerst, die Klasse zu halten und den Verein Schritt für Schritt aufzubauen.') : 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Wir haben einen langen Weg vor uns: Schritt für Schritt nach oben, bis in die ' + FM.lgName(state, 0) + '.') : last.lg > u.lg ? (coachN() ? coachN() + ', der' : 'Der') + ' Aufstieg war ein großer Tag für den Verein. Jetzt müssen wir uns eine Klasse höher behaupten.' : last.lg < u.lg ? (coachN() ? coachN() + ', der' : 'Der') + ' Abstieg tut weh. Wir erwarten, dass die Mannschaft sofort eine Antwort gibt.' : B.conf >= 60 ? (coachN() ? coachN() + ', die' : 'Die') + ' letzte Saison hat uns gefallen. Platz ' + last.pl + ' ist eine gute Grundlage.' : 'Platz ' + last.pl + ' in der letzten Saison war nicht das, was wir uns vorgestellt haben.';
+  var t1 = !last ? (u.lg === 0 ? (B.goal <= 3 ? 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Dieser Verein gehört nach ganz oben, und daran werden Sie gemessen.' : B.goal <= 8 ? 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Wir wollen uns in der oberen Tabellenhälfte festsetzen.' : 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Für uns zählt zuerst, die Klasse zu halten und den Verein Schritt für Schritt aufzubauen.') : 'Willkommen bei ' + u.n + (coachN() ? ', ' + coachN() : '') + '. Wir haben einen langen Weg vor uns: Schritt für Schritt nach oben, bis in die ' + FM.lgName(state, 0) + '.') : last.lg > u.lg ? (coachN() ? coachN() + ', der' : 'Der') + ' Aufstieg war ein großer Tag für den Verein. Jetzt müssen wir uns eine Klasse höher behaupten.' : last.lg < u.lg ? (coachN() ? coachN() + ', der' : 'Der') + ' Abstieg tut weh. Wir erwarten, dass die Mannschaft sofort eine Antwort gibt.' : !last.g ? 'Platz ' + last.pl + ' in der letzten Saison. Jetzt schauen wir nach vorn.' : last.g - last.pl >= 3 ? 'Platz ' + last.pl + ' statt Platz ' + last.g + (coachN() ? ', ' + coachN() : '') + ' – das war stark. Genau so wollen wir weitermachen.' : last.pl <= last.g ? 'Platz ' + last.pl + ', Ziel erreicht. Darauf bauen wir auf.' : last.pl - last.g <= 2 ? 'Platz ' + last.pl + ', knapp am Ziel vorbei, das war Platz ' + last.g + '. Da ist mehr drin.' : 'Platz ' + last.pl + ' war nicht das, was wir uns vorgestellt haben. Das Ziel war Platz ' + last.g + '.';
   var bonus = Math.round(FM.GRANT[u.lg] * (B.amb === 2 ? 0.3 : B.amb === 1 ? 0.05 : 0.15));
   var h = '<div class="logo" style="font-size:14px">VORSTANDSSITZUNG</div><p class="hint" style="margin:0;text-align:center">' + esc(u.n) + ' · Saison ' + sl + ' · ' + FM.lgName(state, u.lg) + '</p>';
   h += '<div class="panel"><div class="row" style="align-items:center;gap:10px"><img class="pc" alt="" aria-hidden="true" src="' + PICS.vorstand + '" width="128" height="96" style="width:128px;height:96px;image-rendering:pixelated;border:2px solid #052826"><div class="grow"><p class="lbl" style="margin:0 0 4px">DER PRÄSIDENT</p><p class="hint" style="margin:0">spricht für den Vorstand</p></div></div><p class="bubble">„' + esc(t1) + ' Unser Ziel für diese Saison: <b>' + FM.goalText(u.lg, B.goal, state) + '</b>. Im Pokal erwarten wir mindestens: <b>' + FM.CUPNAME[FM.cupGoalR(state)] + '</b>.“</p>';
