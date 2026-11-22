@@ -4555,7 +4555,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '22.11. 21:04';
+var BUILD = '22.11. 21:16';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
@@ -6522,7 +6522,7 @@ function vOptions() {
 }
 function vMatch() {
   var I = ui.match, hn = FM.team(state, I.h).n, an = FM.team(state, I.a).n;
-  return '<div class="mtop"><div class="stad"><div class="crowd"></div><div class="wall">' + adStrip() + '<div id="mPk" class="pkb" hidden></div><canvas id="mPitch" width="368" height="224" role="img" aria-label="Spielfeld mit Spielszenen"></canvas><div id="mFin" class="fin" hidden></div></div><div class="sbd"><div class="tm">' + tmK(I.h, 'r', I.home) + '<span class="sc" id="mScore">0:0</span>' + tmK(I.a, 'l', !I.home) + '</div><div style="display:flex;justify-content:space-between;gap:10px;font-size:10.5px;color:#9fd6cf;padding:0 8px 3px;line-height:1.2"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (coachOf(I.h) ? 'Tr. ' + esc(coachOf(I.h)) : '') + '</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right">' + (coachOf(I.a) ? 'Tr. ' + esc(coachOf(I.a)) : '') + '</span></div><div class="sbr"><span id="mStH"></span><span class="mn" id="mMin">' + (I.fr ? (I.ntf ? (I.name || 'Länderspiel') : 'Testspiel') : I.cup ? (I.tour || (state.tour && state.tour.on) ? TNM() + ' · ' : I.eu ? (I.name.indexOf('Gruppe') === 0 ? '' : EUN() + ' · ') : 'Pokal · ') + I.name : 'Anpfiff') + '</span><span id="mStA"></span></div>' + l1Line(I) + '</div><div class="crowd lo"></div></div><div id="mKf"></div><div id="mBtns" class="row"><button class="big sec2 sm" data-a="mpause">Eingreifen</button><button class="big sec2 sm" data-a="speed" id="mSpeed">' + (ui.speed > 1 ? 'Normal' : 'Schneller') + '</button><button class="big sec2 sm" data-a="skip">Abpfiff</button></div><div id="mSh"></div></div><div id="mPanel"></div><div class="ticker" id="mTicker" aria-live="polite"></div>';
+  return '<div class="mtop"><div class="stad"><div class="crowd"></div><div class="wall">' + adStrip() + '<div id="mPk" class="pkb" hidden></div><canvas id="mPitch" width="736" height="448" role="img" aria-label="Spielfeld mit Spielszenen"></canvas><div id="mFin" class="fin" hidden></div></div><div class="sbd"><div class="tm">' + tmK(I.h, 'r', I.home) + '<span class="sc" id="mScore">0:0</span>' + tmK(I.a, 'l', !I.home) + '</div><div style="display:flex;justify-content:space-between;gap:10px;font-size:10.5px;color:#9fd6cf;padding:0 8px 3px;line-height:1.2"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (coachOf(I.h) ? 'Tr. ' + esc(coachOf(I.h)) : '') + '</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right">' + (coachOf(I.a) ? 'Tr. ' + esc(coachOf(I.a)) : '') + '</span></div><div class="sbr"><span id="mStH"></span><span class="mn" id="mMin">' + (I.fr ? (I.ntf ? (I.name || 'Länderspiel') : 'Testspiel') : I.cup ? (I.tour || (state.tour && state.tour.on) ? TNM() + ' · ' : I.eu ? (I.name.indexOf('Gruppe') === 0 ? '' : EUN() + ' · ') : 'Pokal · ') + I.name : 'Anpfiff') + '</span><span id="mStA"></span></div>' + l1Line(I) + '</div><div class="crowd lo"></div></div><div id="mKf"></div><div id="mBtns" class="row"><button class="big sec2 sm" data-a="mpause">Eingreifen</button><button class="big sec2 sm" data-a="speed" id="mSpeed">' + (ui.speed > 1 ? 'Normal' : 'Schneller') + '</button><button class="big sec2 sm" data-a="skip">Abpfiff</button></div><div id="mSh"></div></div><div id="mPanel"></div><div class="ticker" id="mTicker" aria-live="polite"></div>';
 }
 function shoutBar() {
   var M = ui.match, el = document.getElementById('mSh'); if (!el) return;
@@ -7214,21 +7214,53 @@ function simStep(S, dt) {
   var cx = Math.max(-MG, Math.min(FW + MG - VW, fcx * FW - VW / 2)), cy = Math.max(-MG, Math.min(FH + MG - VH, fcy * FH - VH / 2));
   S.cam.x += (cx - S.cam.x) * Math.min(1, dt * 5); S.cam.y += (cy - S.cam.y) * Math.min(1, dt * 5);
 }
+var PHI = {};
+function pitchHi(K) {
+  if (PHI[K]) return PHI[K];
+  var P = 2, cv = document.createElement('canvas'), W = (FW + 2 * P) * K, H = (FH + 2 * P) * K; cv.width = W; cv.height = H;
+  var g = cv.getContext('2d'), x, y, i;
+  g.setTransform(K, 0, 0, K, P * K, P * K);
+  for (i = -1; i < 14; i++) { g.fillStyle = i % 2 ? '#3ba651' : '#45b45c'; g.fillRect(i * 40, -P, 40, FH + 2 * P); }
+  for (i = 0; i < 9; i++) { g.fillStyle = i % 2 ? 'rgba(255,255,255,.035)' : 'rgba(0,0,0,.035)'; g.fillRect(-P, i * FH / 8, FW + 2 * P, FH / 8); }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  var seed = 7, rnd = function () { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+  for (i = 0; i < W * H / 9; i++) { x = rnd() * W; y = rnd() * H; var v = rnd(); g.fillStyle = v < .5 ? 'rgba(20,70,30,' + (.10 + v * .2) + ')' : 'rgba(190,240,170,' + ((v - .5) * .18) + ')'; g.fillRect(x, y, 1 + (rnd() < .3 ? 1 : 0), 1 + (rnd() < .6 ? 1 : 0)); }
+  var vg = g.createRadialGradient(W / 2, H / 2, H * .2, W / 2, H / 2, W * .62); vg.addColorStop(0, 'rgba(255,255,230,.06)'); vg.addColorStop(1, 'rgba(0,25,10,.22)'); g.fillStyle = vg; g.fillRect(0, 0, W, H);
+  PHI[K] = cv;
+  var lc = document.createElement('canvas'); lc.width = W; lc.height = H; g = lc.getContext('2d'); PHI['L' + K] = lc;
+  g.setTransform(K, 0, 0, K, P * K, P * K);
+  g.strokeStyle = 'rgba(244,250,240,.92)'; g.lineWidth = 0.75; g.lineCap = 'round';
+  var L = function (f) { g.beginPath(); f(); g.stroke(); };
+  var b0 = 0.22 * FH, b1 = 0.78 * FH, a0 = 0.37 * FH, a1 = 0.63 * FH, bw = 0.16 * FW, aw = 0.055 * FW, o = 0.5;
+  L(function () { g.rect(o, o, FW - 2 * o, FH - 2 * o); g.moveTo(FW / 2, o); g.lineTo(FW / 2, FH - o); g.moveTo(FW / 2 + 34, FH / 2); g.arc(FW / 2, FH / 2, 34, 0, 6.2832); });
+  [0, 1].forEach(function (sd) {
+    var X = function (v) { return sd ? FW - v : v; };
+    L(function () { g.moveTo(X(o), b0); g.lineTo(X(bw), b0); g.lineTo(X(bw), b1); g.lineTo(X(o), b1); g.moveTo(X(o), a0); g.lineTo(X(aw), a0); g.lineTo(X(aw), a1); g.lineTo(X(o), a1); });
+    var cx = X(0.11 * FW), ang = Math.acos((bw - 0.11 * FW) / 45);
+    L(function () { if (sd) g.arc(cx, FH / 2, 45, Math.PI - ang, Math.PI + ang); else g.arc(cx, FH / 2, 45, -ang, ang); });
+    L(function () { g.moveTo(X(o) + (sd ? -6 : 6), o); g.arc(X(o), o, 6, sd ? Math.PI : 0, Math.PI / 2, !!sd); g.moveTo(X(o) + (sd ? -6 : 6), FH - o); g.arc(X(o), FH - o, 6, sd ? Math.PI : 0, -Math.PI / 2, !sd); });
+    g.fillStyle = 'rgba(244,250,240,.95)'; g.beginPath(); g.arc(cx, FH / 2, 1.1, 0, 6.2832); g.fill();
+  });
+  g.beginPath(); g.arc(FW / 2, FH / 2, 1.3, 0, 6.2832); g.fill();
+  return cv;
+}
 function simDraw(M) {
   var cv = document.getElementById('mPitch'); if (!cv) return;
   var c = cv.getContext('2d'), S = M.sim, ox = Math.round(S.cam.x), oy = Math.round(S.cam.y), k;
   c.imageSmoothingEnabled = false; cv.dataset.cam = S.mode === 'cam' ? '1' : '';
-  if (S.mode === 'cam' && S.camSc) { c.setTransform(1, 0, 0, 1, 0, 0); camDraw(c, S); camNote(c, S.camSc); wxDraw(c, S, 368, 224); return; }
-  c.setTransform(2, 0, 0, 2, 0, 0);
-  var FLX = !!M.flipX, oxS = ox; if (FLX) c.setTransform(-2, 0, 0, 2, 2 * VW, 0);
+  var K = cv.width / VW;
+  if (S.mode === 'cam' && S.camSc) { c.setTransform(K / 2, 0, 0, K / 2, 0, 0); camDraw(c, S); camNote(c, S.camSc); wxDraw(c, S, 368, 224); return; }
+  c.setTransform(K, 0, 0, K, 0, 0);
+  var FLX = !!M.flipX, oxS = ox; if (FLX) c.setTransform(-K, 0, 0, K, K * VW, 0);
   function R(col, wx, wy, w, h) { c.fillStyle = col; c.fillRect(Math.round(wx) - ox, Math.round(wy) - oy, w, h); }
   c.fillStyle = '#2a7d3c'; c.fillRect(0, 0, VW, VH);
-  for (k = 0; k < 13; k++) R(k % 2 ? '#3aa750' : '#44b55b', k * 40, 0, 40, FH);
+  var GF = pitchHi(K); c.imageSmoothingEnabled = true; c.drawImage(GF, -ox - 2, -oy - 2, FW + 4, FH + 4); c.imageSmoothingEnabled = false;
   if (S.tf !== undefined && S.tf < 92) {
     var wv = 1 - S.tf / 100, TA = [0.08, 0.30, 0.60, 0.85], lo = wv >= TA[3] ? 3 : wv >= TA[2] ? 2 : wv >= TA[1] ? 1 : 0, hi = Math.min(3, lo + 1), tt = lo === 3 ? 1 : Math.max(0, (wv - TA[lo]) / (TA[hi] - TA[lo]));
     var dT = function (q, al) { var im = turfImg(q); if (!im || !im.complete || !im.naturalWidth) return; c.globalAlpha = al; c.drawImage(im, -ox, -oy, FW, FH); c.globalAlpha = 1; };
     if (lo > 0) dT(lo, 1); if (hi > lo) dT(hi, tt);
   }
+  c.imageSmoothingEnabled = true; c.drawImage(PHI['L' + K], -ox - 2, -oy - 2, FW + 4, FH + 4); c.imageSmoothingEnabled = false;
   var jump = S.banner > 0 ? Math.floor(S.t * 8) % 2 : 0;
   function crowd(x0, y0, x1, y1) {
     R('#1b2430', x0, y0, x1 - x0, y1 - y0);
@@ -7240,24 +7272,17 @@ function simDraw(M) {
   }
   crowd(-MG, -MG, FW + MG, -13); crowd(-MG, FH + 13, FW + MG, FH + MG);
   if (!S.adb) S.adb = adBoards();
-  if (FLX) { c.setTransform(2, 0, 0, 2, 0, 0); ox = FW - VW - oxS; }
+  if (FLX) { c.setTransform(K, 0, 0, K, 0, 0); ox = FW - VW - oxS; }
   if (S.adb.length) { c.imageSmoothingEnabled = true; for (k = 0; k * 40 < FW; k++) { var ai = S.adb[k % S.adb.length], axp = k * 40 + 1 - ox; if (axp > VW || axp < -40) continue; R('#0b1622', k * 40, -13, 40, 12); if (ai && ai.complete && ai.naturalWidth) c.drawImage(ai, 0, 0, ai.naturalWidth, Math.min(ai.naturalHeight, Math.round(ai.naturalWidth * 0.28)), axp, -12 - oy, 38, 10.6); else R('#39454d', k * 40 + 1, -12, 38, 10); } c.imageSmoothingEnabled = false; } crowd(-MG, -13, -15, FH + 13); crowd(FW + 15, -13, FW + MG, FH + 13);
-  if (FLX) { ox = oxS; c.setTransform(-2, 0, 0, 2, 2 * VW, 0); }
+  if (FLX) { ox = oxS; c.setTransform(-K, 0, 0, K, K * VW, 0); }
   for (k = -1; k < 11; k++) {
     var bc = BOARD[(k + 5) % 5], tc = bc === '#f4efe1' ? '#12356f' : '#f4efe1';
     R(bc, k * 52, -12, 52, 8); R(tc, k * 52 + 8, -9, 20 + (k + 5) % 3 * 8, 2); R('#0b1622', k * 52, -4, 52, 1);
     R(bc, k * 52 + 26, FH + 5, 52, 8); R(tc, k * 52 + 34, FH + 8, 20 + (k + 6) % 3 * 8, 2);
   }
   var L = '#eaf6ea', g0 = Math.round(0.44 * FH), g1 = Math.round(0.56 * FH), b0 = Math.round(0.22 * FH), b1 = Math.round(0.78 * FH), a0 = Math.round(0.37 * FH), a1 = Math.round(0.63 * FH), bw = Math.round(0.16 * FW), aw = Math.round(0.055 * FW);
-  R(L, 0, 0, FW, 1); R(L, 0, FH - 1, FW, 1); R(L, 0, 0, 1, FH); R(L, FW - 1, 0, 1, FH); R(L, FW / 2, 0, 1, FH); R(L, FW / 2 - 1, FH / 2 - 1, 3, 3);
-  for (k = 0; k < 110; k++) { var an = k / 110 * 6.2832; R(L, FW / 2 + Math.cos(an) * 34, FH / 2 + Math.sin(an) * 34, 1, 1); }
   [0, 1].forEach(function (sd) {
     function X(v, w) { return sd ? FW - v - w : v; }
-    R(L, X(0, bw), b0, bw, 1); R(L, X(0, bw), b1, bw, 1); R(L, X(bw, 1), b0, 1, b1 - b0 + 1);
-    R(L, X(0, aw), a0, aw, 1); R(L, X(0, aw), a1, aw, 1); R(L, X(aw, 1), a0, 1, a1 - a0 + 1);
-    R(L, X(Math.round(0.11 * FW), 2), FH / 2 - 1, 2, 2);
-    for (var aa = -0.93; aa <= 0.93; aa += 0.045) R(L, sd ? FW - 0.11 * FW - Math.cos(aa) * 45 : 0.11 * FW + Math.cos(aa) * 45, FH / 2 + Math.sin(aa) * 45, 1, 1);
-    for (var ca = 0; ca <= 1.58; ca += 0.2) { R(L, sd ? FW - 1 - Math.cos(ca) * 6 : Math.cos(ca) * 6, Math.sin(ca) * 6, 1, 1); R(L, sd ? FW - 1 - Math.cos(ca) * 6 : Math.cos(ca) * 6, FH - 1 - Math.sin(ca) * 6, 1, 1); }
     var sh = S.shake > 0 && S.shakeSide !== sd ? Math.round(Math.sin(S.t * 55) * 2) : 0, nx = sd ? FW + 1 + Math.abs(sh) * 0 : -12 - Math.abs(sh);
     var nw = 12 + Math.abs(sh);
     R('#245f33', sd ? FW : -nw, g0, nw, g1 - g0);
@@ -7329,7 +7354,7 @@ function simDraw(M) {
       if (p.card !== 'y') { c.fillStyle = '#e0402f'; c.fillRect(X + (p.card === 'yr' ? 9 : 4), Y - 32, 4, 6); }
     }
   });
-  if (FLX) c.setTransform(2, 0, 0, 2, 0, 0);
+  if (FLX) c.setTransform(K, 0, 0, K, 0, 0);
   if (S.cap) {
     var CP = S.cap, ch = 16 + CP.lines.length * 10, cw2 = 150, cex = (CP.card ? (CP.card === 'yr' ? 16 : 9) : 0) + (CP.cross ? 10 : 0), cfs = 7; c.font = "7px 'Press Start 2P', monospace"; var ctw = c.measureText(CP.title).width + cex; c.font = "600 8px 'Space Grotesk', system-ui, sans-serif"; var clw = 0; CP.lines.forEach(function (ln) { clw = Math.max(clw, c.measureText(ln.txt).width + (ln.ic ? 9 : 0)); }); cw2 = Math.min(VW - 8, Math.max(150, Math.ceil(Math.max(ctw, clw)) + 12)); if (ctw > cw2 - 12) cfs = Math.max(4.5, Math.floor(7 * (cw2 - 12 - cex) / (ctw - cex) * 2) / 2); var clf = clw > cw2 - 12 ? Math.max(5.5, Math.floor(8 * (cw2 - 12) / clw * 2) / 2) : 8; var cx0 = Math.round(VW / 2 - cw2 / 2), cy0 = ((S.focus ? S.focus.y : S.by) * FH - oy) > VH / 2 ? 5 : VH - ch - 5;
     c.fillStyle = 'rgba(11,22,34,.86)'; c.fillRect(cx0, cy0, cw2, ch);
