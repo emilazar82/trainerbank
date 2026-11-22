@@ -1,0 +1,104 @@
+#cloud-config
+# Trainerbank-Sync – Einrichtung eines frischen Hetzner-Cloud-Servers (Ubuntu 24.04).
+# Beim Anlegen des Servers komplett in das Feld "Cloud config" einfügen.
+# Installiert: Node.js, Caddy (HTTPS mit automatischem Zertifikat), den Sync-Dienst aus dem
+# öffentlichen GitHub-Repo und eine tägliche Aktualisierung. Keine Passwörter, keine Schlüssel.
+
+package_update: true
+package_upgrade: true
+packages:
+  - nodejs
+  - caddy
+  - curl
+  - unattended-upgrades
+
+write_files:
+  - path: /etc/systemd/system/trainerbank-sync.service
+    content: |
+      [Unit]
+      Description=Trainerbank Online-Sicherung
+      After=network-online.target
+      Wants=network-online.target
+
+      [Service]
+      ExecStart=/usr/bin/node /opt/trainerbank/sync.js
+      Environment=PORT=8787 HOST=127.0.0.1 DATA=/var/lib/trainerbank TRUST_PROXY=1
+      DynamicUser=yes
+      StateDirectory=trainerbank
+      Restart=always
+      RestartSec=3
+      NoNewPrivileges=yes
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=yes
+      PrivateDevices=yes
+      ProtectKernelTunables=yes
+      ProtectKernelModules=yes
+      ProtectControlGroups=yes
+      RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+      LockPersonality=yes
+      MemoryMax=512M
+
+      [Install]
+      WantedBy=multi-user.target
+
+  - path: /usr/local/bin/trainerbank-update
+    permissions: '0755'
+    content: |
+      #!/bin/sh
+      # Holt die aktuelle sync.js aus dem Repo und startet den Dienst nur neu, wenn sie sich geändert hat
+      # und Node sie fehlerfrei prüfen kann.
+      set -e
+      URL=https://raw.githubusercontent.com/emilazar82/trainerbank/main/server/sync.js
+      TMP=$(mktemp)
+      curl -fsSL "$URL" -o "$TMP"
+      if ! cmp -s "$TMP" /opt/trainerbank/sync.js && node --check "$TMP"; then
+        install -m 0644 "$TMP" /opt/trainerbank/sync.js
+        systemctl restart trainerbank-sync
+        echo "sync.js aktualisiert"
+      fi
+      rm -f "$TMP"
+
+  - path: /etc/systemd/system/trainerbank-update.service
+    content: |
+      [Unit]
+      Description=Trainerbank-Sync aktualisieren
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/bin/trainerbank-update
+
+  - path: /etc/systemd/system/trainerbank-update.timer
+    content: |
+      [Unit]
+      Description=Trainerbank-Sync täglich aktualisieren
+      [Timer]
+      OnCalendar=*-*-* 04:20
+      RandomizedDelaySec=900
+      Persistent=true
+      [Install]
+      WantedBy=timers.target
+
+  - path: /usr/local/bin/trainerbank-host
+    permissions: '0755'
+    content: |
+      #!/bin/sh
+      # Setzt die Adresse, unter der der Dienst erreichbar ist, und lässt Caddy das Zertifikat holen.
+      # Ohne Angabe: <IP>.sslip.io (funktioniert sofort, ohne eigene Domain).
+      # Später mit eigener Domain:  trainerbank-host sync.meine-domain.de
+      set -e
+      H="$1"
+      if [ -z "$H" ]; then
+        IP=$(curl -fsS http://169.254.169.254/hetzner/v1/metadata/public-ipv4)
+        H="$(echo "$IP" | tr . -).sslip.io"
+      fi
+      printf '%s {\n\tencode gzip\n\trequest_body {\n\t\tmax_size 7MB\n\t}\n\treverse_proxy 127.0.0.1:8787\n\theader -Server\n}\n' "$H" > /etc/caddy/Caddyfile
+      systemctl reload caddy || systemctl restart caddy
+      echo "Adresse: https://$H"
+      echo "$H" > /etc/trainerbank-host
+
+runcmd:
+  - mkdir -p /opt/trainerbank
+  - curl -fsSL https://raw.githubusercontent.com/emilazar82/trainerbank/main/server/sync.js -o /opt/trainerbank/sync.js
+  - systemctl daemon-reload
+  - systemctl enable --now trainerbank-sync trainerbank-update.timer
+  - /usr/local/bin/trainerbank-host
