@@ -3,8 +3,8 @@ import WebKit
 import AVFoundation
 
 /// Schlanke Hülle um das Spiel: Die HTML-Datei liegt in der App (web/index.html)
-/// und läuft in einem WKWebView. Die App greift nicht auf das Netz zu: Gespielt wird immer die
-/// mitgelieferte Spieldatei, neue Fassungen kommen als App-Update.
+/// und läuft in einem WKWebView. Gespielt wird immer die mitgelieferte Spieldatei, neue Fassungen
+/// kommen als App-Update. Ins Netz geht nur die freiwillige Online-Sicherung der Spielstände.
 final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDelegate,
                                 WKScriptMessageHandler, UIDocumentPickerDelegate {
 
@@ -41,6 +41,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
           },
           shareFile: function (name, json, text) {
             window.webkit.messageHandlers.tb.postMessage({ a: 'share', name: String(name), json: String(json), text: String(text || '') });
+          },
+          scanQR: function () {
+            window.webkit.messageHandlers.tb.postMessage({ a: 'scan' });
           },
           haptic: function (kind) {
             window.webkit.messageHandlers.tb.postMessage({ a: 'haptic', kind: String(kind || '') });
@@ -157,6 +160,8 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         case "share":
             shareFile(name: body["name"] as? String ?? "trainerbank-spielstand.json",
                       json: body["json"] as? String ?? "")
+        case "scan":
+            scanQR()
         case "haptic":
             let kind = body["kind"] as? String ?? ""
             if kind == "goal" {
@@ -206,6 +211,40 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
             self?.shared(done)
         }
         present(vc, animated: true)
+    }
+
+    /// QR-Code der Online-Sicherung mit der Kamera lesen und den Inhalt ans Spiel geben.
+    private func scanQR() {
+        let go = { [weak self] in
+            guard let self = self else { return }
+            let vc = QRScanViewController()
+            vc.onResult = { [weak self] text in
+                guard let self = self, let text = text else { return }
+                let js = (try? String(data: JSONSerialization.data(withJSONObject: [text]), encoding: .utf8)) ?? "[\"\"]"
+                self.web.evaluateJavaScript("window.tbScan&&window.tbScan(\(js)[0])", completionHandler: nil)
+            }
+            vc.modalPresentationStyle = .fullScreen
+            self.present(vc, animated: true)
+        }
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            go()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { ok in DispatchQueue.main.async { ok ? go() : self.cameraDenied() } }
+        default:
+            cameraDenied()
+        }
+    }
+
+    private func cameraDenied() {
+        let a = UIAlertController(title: "Kamera nicht erlaubt",
+                                  message: "Erlaube Trainerbank in den Einstellungen den Zugriff auf die Kamera oder tipp den Code ein.",
+                                  preferredStyle: .alert)
+        a.addAction(UIAlertAction(title: "Einstellungen", style: .default) { _ in
+            if let u = URL(string: UIApplication.openSettingsURLString) { UIApplication.shared.open(u) }
+        })
+        a.addAction(UIAlertAction(title: "OK", style: .cancel))
+        present(a, animated: true)
     }
 
     private func shared(_ ok: Bool) {
@@ -286,5 +325,109 @@ final class WeakHandler: NSObject, WKScriptMessageHandler {
     init(_ target: WKScriptMessageHandler) { self.target = target }
     func userContentController(_ c: WKUserContentController, didReceive m: WKScriptMessage) {
         target?.userContentController(c, didReceive: m)
+    }
+}
+
+
+/// Vollbild-Kamera, die den ersten QR-Code liest und sich dann schließt.
+final class QRScanViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
+    var onResult: ((String?) -> Void)?
+    private let session = AVCaptureSession()
+    private var preview: AVCaptureVideoPreviewLayer?
+    private var done = false
+
+    override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .portrait }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = UIColor(red: 6 / 255, green: 48 / 255, blue: 46 / 255, alpha: 1)
+
+        if let dev = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+           let input = try? AVCaptureDeviceInput(device: dev), session.canAddInput(input) {
+            session.addInput(input)
+            let out = AVCaptureMetadataOutput()
+            if session.canAddOutput(out) {
+                session.addOutput(out)
+                out.setMetadataObjectsDelegate(self, queue: .main)
+                out.metadataObjectTypes = [.qr]
+            }
+            let pl = AVCaptureVideoPreviewLayer(session: session)
+            pl.videoGravity = .resizeAspectFill
+            view.layer.addSublayer(pl)
+            preview = pl
+        }
+
+        let title = UILabel()
+        title.text = "QR-CODE SCANNEN"
+        title.textColor = UIColor(red: 1, green: 216 / 255, blue: 77 / 255, alpha: 1)
+        title.font = .monospacedSystemFont(ofSize: 15, weight: .bold)
+        title.textAlignment = .center
+        let hint = UILabel()
+        hint.text = "Halte die Kamera auf den QR-Code in den Optionen des anderen Geräts."
+        hint.textColor = .white
+        hint.numberOfLines = 0
+        hint.font = .systemFont(ofSize: 15)
+        hint.textAlignment = .center
+        let frame = UIView()
+        frame.layer.borderColor = UIColor(red: 1, green: 216 / 255, blue: 77 / 255, alpha: 1).cgColor
+        frame.layer.borderWidth = 3
+        let cancel = UIButton(type: .system)
+        cancel.setTitle("Abbrechen", for: .normal)
+        cancel.setTitleColor(.white, for: .normal)
+        cancel.titleLabel?.font = .monospacedSystemFont(ofSize: 17, weight: .bold)
+        cancel.backgroundColor = UIColor(red: 15 / 255, green: 92 / 255, blue: 88 / 255, alpha: 1)
+        cancel.layer.borderColor = UIColor(red: 63 / 255, green: 174 / 255, blue: 152 / 255, alpha: 1).cgColor
+        cancel.layer.borderWidth = 2
+        cancel.addTarget(self, action: #selector(close), for: .touchUpInside)
+
+        for v in [title, hint, frame, cancel] { v.translatesAutoresizingMaskIntoConstraints = false; view.addSubview(v) }
+        let g = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            title.topAnchor.constraint(equalTo: g.topAnchor, constant: 24),
+            title.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            frame.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            frame.centerYAnchor.constraint(equalTo: view.centerYAnchor),
+            frame.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.65),
+            frame.heightAnchor.constraint(equalTo: frame.widthAnchor),
+            hint.topAnchor.constraint(equalTo: frame.bottomAnchor, constant: 20),
+            hint.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 28),
+            hint.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -28),
+            cancel.bottomAnchor.constraint(equalTo: g.bottomAnchor, constant: -24),
+            cancel.leadingAnchor.constraint(equalTo: g.leadingAnchor, constant: 24),
+            cancel.trailingAnchor.constraint(equalTo: g.trailingAnchor, constant: -24),
+            cancel.heightAnchor.constraint(equalToConstant: 52)
+        ])
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        preview?.frame = view.bounds
+    }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        let s = session
+        DispatchQueue.global(qos: .userInitiated).async { if !s.isRunning { s.startRunning() } }
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        let s = session
+        DispatchQueue.global(qos: .userInitiated).async { if s.isRunning { s.stopRunning() } }
+    }
+
+    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject],
+                        from connection: AVCaptureConnection) {
+        guard !done, let o = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
+              let text = o.stringValue else { return }
+        done = true
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        dismiss(animated: true) { [onResult] in onResult?(text) }
+    }
+
+    @objc private func close() {
+        done = true
+        dismiss(animated: true) { [onResult] in onResult?(nil) }
     }
 }

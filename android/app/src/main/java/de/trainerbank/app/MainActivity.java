@@ -45,6 +45,8 @@ public class MainActivity extends ComponentActivity {
 
     private ActivityResultLauncher<Intent> pickFile;
     private ActivityResultLauncher<Intent> createFile;
+    private ActivityResultLauncher<String> askCamera;
+    private android.webkit.PermissionRequest pendingCam;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -61,6 +63,15 @@ public class MainActivity extends ComponentActivity {
             }
             pendingChooser.onReceiveValue(uris);
             pendingChooser = null;
+        });
+
+        // Kamera für den QR-Code der Online-Sicherung (nur auf Nachfrage beim Scannen)
+        askCamera = registerForActivityResult(new ActivityResultContracts.RequestPermission(), granted -> {
+            android.webkit.PermissionRequest r = pendingCam;
+            pendingCam = null;
+            if (r == null) return;
+            if (granted) r.grant(new String[]{android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+            else r.deny();
         });
 
         // Datei anlegen (Spielstand sichern)
@@ -134,6 +145,24 @@ public class MainActivity extends ComponentActivity {
             public boolean onConsoleMessage(android.webkit.ConsoleMessage m) {
                 android.util.Log.i("Trainerbank", String.valueOf(m.message()));
                 return true;
+            }
+
+            @Override
+            public void onPermissionRequest(android.webkit.PermissionRequest request) {
+                runOnUiThread(() -> {
+                    boolean video = false;
+                    for (String r : request.getResources())
+                        if (android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r)) video = true;
+                    if (!video) { request.deny(); return; }
+                    if (androidx.core.content.ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.CAMERA)
+                            == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                        request.grant(new String[]{android.webkit.PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+                    } else {
+                        if (pendingCam != null) pendingCam.deny();
+                        pendingCam = request;
+                        askCamera.launch(android.Manifest.permission.CAMERA);
+                    }
+                });
             }
 
             @Override

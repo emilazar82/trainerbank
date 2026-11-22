@@ -46,4 +46,5 @@ targets:
         UILaunchScreen:
           UIColorName: LaunchBG
         ITSAppUsesNonExemptEncryption: false
+        NSCameraUsageDescription: "Zum Scannen des QR-Codes, mit dem du deinen Spielstand von einem anderen Gerät übernimmst."
         LSApplicationCategoryType: public.app-category.sports-games

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Einzige Berechtigung: Die App fragt die Projektseite nach einer neueren Spieldatei. Das Spiel selbst läuft ohne Internet. -->
+    <!-- Internet: neuere Spieldatei von der Projektseite und Online-Sicherung der Spielstände. Das Spiel selbst läuft ohne Internet. -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Kamera nur zum Scannen des QR-Codes der Online-Sicherung; wird erst beim Scannen erfragt. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:allowBackup="false"
