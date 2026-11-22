@@ -600,6 +600,7 @@ body.dsk.dmain #app{max-width:1500px;height:100vh;min-height:0;box-sizing:border
 }
 img[src^="data:image/webp"],image[href^="data:image/webp"]{image-rendering:auto!important}
 .tile img.pc{image-rendering:auto!important}
+.sbtn{display:flex!important;align-items:center;justify-content:center;width:100%!important;min-height:44px!important;padding:6px 14px!important;font-size:13px!important;box-sizing:border-box;text-align:center;margin:0}
 </style>
 </head>
 <body>
@@ -4553,7 +4554,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '22.11. 20:33';
+var BUILD = '22.11. 20:53';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
@@ -5124,9 +5125,9 @@ function render() {
   dskRender();
 }
 function vStart() {
-  var h = '<div class="logo" style="margin-top:14px">TRAINERBANK</div><p class="hint" style="text-align:center;margin:0 0 4px">Retro-Fußballmanager · Stand ' + BUILD + '</p>' + updHtml() + updBtn() + osNewerHtml() + (ui.ldp ? '<div class="panel" style="border-color:var(--yellow)"><p style="margin:0 0 8px;font-size:15px">' + (ui.ldp.sync ? 'Online-Spielstand: ' : 'Datei: ') + '<b>' + esc(FM.clubTeam(ui.ldp.state).n) + '</b>, Saison ' + FM.seasonLabel(ui.ldp.state) + ', ' + (ui.ldp.state.round + 1) + '. Spieltag.' + (saved ? ' Der Spielstand auf diesem Gerät wird ersetzt.' : '') + '</p><div class="row"><button class="big" data-a="ldyes">Laden</button><button class="big sec2" data-a="ldno">Abbrechen</button></div></div>' : SYNC_URL && ui.osIn ? '<div class="panel"><p class="lbl">MIT CODE FORTSETZEN</p>' + osEnterHtml() + '</div>' : '<div style="text-align:center;margin-top:8px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><label class="big sec2 sm flab" style="display:inline-flex;width:auto;padding:0 18px;min-height:38px;font-size:13px;align-items:center">Spielstand aus Datei laden<input type="file" accept=".json,.txt,application/json" data-f="svload" hidden></label>' + (SYNC_URL ? '<button class="big sec2 sm" data-a="osin" style="display:inline-flex;width:auto;padding:0 18px;min-height:38px;font-size:13px;align-items:center">Mit Code fortsetzen</button>' : '') + '</div>');
+  var h = '<div class="logo" style="margin-top:14px">TRAINERBANK</div><p class="hint" style="text-align:center;margin:0 0 4px">Retro-Fußballmanager · Stand ' + BUILD + '</p>' + updHtml() + updBtn() + osNewerHtml() + (ui.ldp ? '<div class="panel" style="border-color:var(--yellow)"><p style="margin:0 0 8px;font-size:15px">' + (ui.ldp.sync ? 'Online-Spielstand: ' : 'Datei: ') + '<b>' + esc(FM.clubTeam(ui.ldp.state).n) + '</b>, Saison ' + FM.seasonLabel(ui.ldp.state) + ', ' + (ui.ldp.state.round + 1) + '. Spieltag.' + (saved ? ' Der Spielstand auf diesem Gerät wird ersetzt.' : '') + '</p><div class="row"><button class="big" data-a="ldyes">Laden</button><button class="big sec2" data-a="ldno">Abbrechen</button></div></div>' : SYNC_URL && ui.osIn ? '<div class="panel"><p class="lbl">MIT CODE FORTSETZEN</p>' + osEnterHtml() + '</div>' : '<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px"><label class="big sec2 sm flab sbtn">Spielstand aus Datei laden<input type="file" accept=".json,.txt,application/json" data-f="svload" hidden></label>' + (SYNC_URL ? '<button class="big sec2 sm sbtn" data-a="osin">Mit Code fortsetzen</button>' : '') + '</div>');
   h += '<img class="heropic" alt="Fußballstadion bei Flutlicht mit vollen Rängen" src="' + PICS.flutlicht + '" width="192" height="144">';
-  h += '<p style="text-align:center;margin:0 0 6px"><button class="mini" data-a="prefmus" style="padding:6px 12px">♪ Musik ' + (prefs.snd && prefs.mus !== false ? 'an' : 'aus') + '</button></p>';
+  h += '<p style="margin:0 0 6px"><button class="big sec2 sm sbtn" data-a="prefmus">♪ Musik ' + (prefs.snd && prefs.mus !== false ? 'an' : 'aus') + '</button></p>';
   if (saved) {
     var s = saved.state, u = FM.clubTeam(s), tb = FM.table(s, u.lg), pl = 1; tb.forEach(function (t, k) { if (t.id === u.id) pl = k + 1; });
     h += '<div class="panel"><div class="acard">' + (crestImg(u.n, 46) || crestSvg(u.c1 || '#ffd84d', u.c2 || '#12356f', 1, crestL(u.n), 46)) + '<div class="grow"><p class="title">' + esc(u.n) + '</p><p class="hint" style="margin:0">' + FM.lgName(s, u.lg) + ' · Saison ' + FM.seasonLabel(s) + '</p></div></div><div class="rings">' + ring(Math.min(1, s.round / FM.RN(s)), '#ffd84d', s.over ? 'Ende' : (s.round + 1) + '.', 'Spieltag') + ring((tb.length - pl + 1) / tb.length, '#6df09a', pl + '.', 'Tabellenplatz') + ring(1, s.cash < 0 ? '#ff9a8f' : '#6df09a', tk(s.cash), 'Kasse') + '</div><button class="big" style="margin-top:12px" data-a="continue">Weiterspielen</button></div>';
@@ -6205,7 +6206,7 @@ try {
   };
 } catch (eB) { }
 function updHtml() { return INAPP && !APPUPD ? '' : NEWV ? '<div class="panel" style="border-color:var(--yellow)"><p style="margin:0 0 8px;font-size:15px"><b>' + (APPUPD ? 'Neue Version geladen' : 'Neue Version verfügbar') + '</b> (Stand ' + esc(NEWV) + '). Dein Spielstand bleibt erhalten.</p><button class="big" data-a="update">Neue Version laden</button></div>' : ''; }
-function updBtn() { return NEWV || (INAPP && !appUpd()) ? '' : '<div style="text-align:center"><button class="big sec2 sm" style="width:auto;padding:0 18px;min-height:38px;font-size:13px" data-a="updcheck">' + (ui.updw ? 'Prüfe …' : 'Auf Updates prüfen') + '</button></div>'; }
+function updBtn() { return NEWV || (INAPP && !appUpd()) ? '' : '<div><button class="big sec2 sm sbtn" data-a="updcheck">' + (ui.updw ? 'Prüfe …' : 'Auf Updates prüfen') + '</button></div>'; }
 function updManual() {
   if (ui.updw) return; ui.updw = true; render();
   var done = function (msg) { ui.updw = false; render(); if (msg) toast(msg); };
