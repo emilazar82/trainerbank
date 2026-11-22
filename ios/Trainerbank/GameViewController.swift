@@ -39,6 +39,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
           saveFile: function (name, json) {
             window.webkit.messageHandlers.tb.postMessage({ a: 'save', name: String(name), json: String(json) });
           },
+          shareFile: function (name, json, text) {
+            window.webkit.messageHandlers.tb.postMessage({ a: 'share', name: String(name), json: String(json), text: String(text || '') });
+          },
           haptic: function (kind) {
             window.webkit.messageHandlers.tb.postMessage({ a: 'haptic', kind: String(kind || '') });
           }
@@ -151,6 +154,9 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         case "save":
             saveFile(name: body["name"] as? String ?? "trainerbank-spielstand.json",
                      json: body["json"] as? String ?? "")
+        case "share":
+            shareFile(name: body["name"] as? String ?? "trainerbank-spielstand.json",
+                      json: body["json"] as? String ?? "")
         case "haptic":
             let kind = body["kind"] as? String ?? ""
             if kind == "goal" {
@@ -176,6 +182,34 @@ final class GameViewController: UIViewController, WKNavigationDelegate, WKUIDele
         let picker = UIDocumentPickerViewController(forExporting: [tmp], asCopy: true)
         picker.delegate = self
         present(picker, animated: true)
+    }
+
+    /// Spielstand teilen: Datei über das Teilen-Menü (AirDrop, Nachrichten, Mail, Dateien …) weitergeben.
+    private func shareFile(name: String, json: String) {
+        let safe = name.replacingOccurrences(of: "/", with: "-")
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("share", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let tmp = dir.appendingPathComponent(safe)
+        do {
+            try json.data(using: .utf8)?.write(to: tmp, options: .atomic)
+        } catch {
+            return shared(false)
+        }
+        let vc = UIActivityViewController(activityItems: [tmp], applicationActivities: nil)
+        if let pop = vc.popoverPresentationController {
+            pop.sourceView = view
+            pop.sourceRect = CGRect(x: view.bounds.midX, y: view.bounds.midY, width: 1, height: 1)
+            pop.permittedArrowDirections = []
+        }
+        vc.completionWithItemsHandler = { [weak self] _, done, _, _ in
+            try? FileManager.default.removeItem(at: tmp)
+            self?.shared(done)
+        }
+        present(vc, animated: true)
+    }
+
+    private func shared(_ ok: Bool) {
+        web.evaluateJavaScript("window.tbShared&&window.tbShared(\(ok ? "true" : "false"))", completionHandler: nil)
     }
 
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {

@@ -249,5 +249,29 @@ public class MainActivity extends ComponentActivity {
                 }
             });
         }
+
+        @JavascriptInterface
+        public void shareFile(String name, String json, String text) {
+            runOnUiThread(() -> {
+                try {
+                    java.io.File dir = new java.io.File(getCacheDir(), "share");
+                    dir.mkdirs();
+                    java.io.File f = new java.io.File(dir, name.replace('/', '-'));
+                    try (java.io.FileOutputStream o = new java.io.FileOutputStream(f)) {
+                        o.write(json.getBytes(StandardCharsets.UTF_8));
+                    }
+                    Uri u = androidx.core.content.FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".files", f);
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("application/json");
+                    i.putExtra(Intent.EXTRA_STREAM, u);
+                    i.putExtra(Intent.EXTRA_SUBJECT, "Trainerbank-Spielstand");
+                    if (text != null && !text.isEmpty()) i.putExtra(Intent.EXTRA_TEXT, text);
+                    i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(i, "Spielstand teilen"));
+                } catch (Exception e) {
+                    web.evaluateJavascript("window.tbShared&&window.tbShared(false)", null);
+                }
+            });
+        }
     }
 }
