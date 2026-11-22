@@ -4495,7 +4495,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '22.11. 17:03';
+var BUILD = '22.11. 19:00';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
@@ -4517,7 +4517,7 @@ function loadLocal() {
 }
 
 /* ---------- Online-Sicherung (Sync-Code + QR) ---------- */
-var SYNC_URL = ''; try { SYNC_URL = localStorage.getItem('tb-sync-url') || SYNC_URL; } catch (eSU) { }
+var SYNC_URL = 'https://2-29-27-235.sslip.io'; try { SYNC_URL = localStorage.getItem('tb-sync-url') || SYNC_URL; } catch (eSU) { }
 var SYNC_WEB = 'https://emilazar82.github.io/trainerbank/';
 var OS = { code: '', rev: 0, ts: 0 }, osT = null, osBusy = false, osAgain = false;
 try { var osRaw = JSON.parse(localStorage.getItem('tb-sync') || 'null'); if (osRaw && osRaw.code) OS = osRaw; } catch (eOS) { }
