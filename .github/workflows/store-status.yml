@@ -1,0 +1,16 @@
+name: Store-Status (nur lesen)
+on: workflow_dispatch
+jobs:
+  ios:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: App-Store-Status abfragen
+        env:
+          P8: ${{ secrets.TB_ASC_KEY_P8_BASE64 }}
+          KEY_ID: ${{ secrets.TB_ASC_KEY_ID }}
+          ISSUER: ${{ secrets.TB_ASC_ISSUER_ID }}
+        run: |
+          echo "$P8" | base64 -d > "$RUNNER_TEMP/k.p8"
+          python3 ios/ci/status.py "$RUNNER_TEMP/k.p8" "$KEY_ID" "$ISSUER"
+          rm -f "$RUNNER_TEMP/k.p8"
