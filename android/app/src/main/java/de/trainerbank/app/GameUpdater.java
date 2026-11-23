@@ -16,7 +16,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Hält das Spiel aktuell: prüft auf der Projektseite, ob eine neuere Spieldatei vorliegt, lädt sie und
+ * Hält das Spiel aktuell: prüft auf trainerbank.eu, ob eine neuere Spieldatei vorliegt, lädt sie und
  * legt sie in der App ab. Ohne Netz läuft die zuletzt geladene oder die mitgelieferte Fassung.
  * Übertragen wird dabei nichts außer der Abfrage selbst.
  */
@@ -24,7 +24,7 @@ final class GameUpdater {
 
     interface Done { void run(String build); }
 
-    private static final String BASE = "https://emilazar82.github.io/trainerbank/";
+    private static final String BASE = "https://trainerbank.eu/";
 
     private final Context ctx;
     private final File cachedFile;
