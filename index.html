@@ -99,6 +99,26 @@ body.tsb #ttlbg:after{background:rgba(3,14,11,.8)}
 .tplt{position:absolute;left:24px;bottom:12px;font-family:var(--px);font-size:10px;letter-spacing:3px;color:#e9c98d;text-shadow:1px 1px 0 #2a1a0c}
 .tleg{position:absolute;left:20%;right:20%;bottom:-34px;height:34px;border-left:10px solid #1c1c1c;border-right:10px solid #1c1c1c}
 @keyframes ttvin{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+
+.timp p{margin:0 0 12px;line-height:1.55}.timp .lbl{margin:14px 0 4px}.timp a{color:#9fe8dc}
+.tstores{display:flex;flex-direction:column;gap:8px}
+.tsth{margin:4px 0 0;font-family:var(--px);font-size:10px;letter-spacing:2px;color:#6df09a}
+.tstrow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tst{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(6,26,20,.72);border:2px solid rgba(255,255,255,.28);color:#fff;text-decoration:none;min-height:52px;box-sizing:border-box}
+.tst:hover{border-color:#ffd84d}
+.tst svg{display:none}
+.tst span{display:flex;flex-direction:column;line-height:1.2}.tst b{font-size:16px}.tst small{font-size:12px;color:rgba(255,255,255,.65)}
+.tsts{display:none}
+@media (min-width:1100px){
+.tstores:not(.tmob){position:absolute;top:84px;right:6vw;padding:16px 18px 12px;border-radius:16px;background:rgba(3,14,11,.78);border:1px solid rgba(109,240,154,.3);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);width:min(360px,calc(100vw - 820px));box-sizing:border-box;animation:tup .8s .7s cubic-bezier(.2,.8,.2,1) both}
+.tstores:not(.tmob) .tsth{margin:0;text-align:center}
+.tstores:not(.tmob) .tst{flex-direction:column;background:#fff;color:#07241b;border:0;padding:10px 10px 8px;gap:6px;text-align:center}
+.tstores:not(.tmob) .tst svg{display:block;width:100%;max-width:130px;height:auto}
+.tstores:not(.tmob) .tst span{align-items:center}.tstores:not(.tmob) .tst b{font-size:15px}.tstores:not(.tmob) .tst small{color:#2a6a52}
+.tstores:not(.tmob) .tst:hover{box-shadow:0 0 0 3px #ffd84d}
+.tstores:not(.tmob) .tsts{display:block;margin:0;text-align:center;font-size:12px;color:rgba(255,255,255,.6)}
+}
+@media (min-width:1100px) and (max-height:760px){.tstores:not(.tmob){top:70px;width:min(300px,calc(100vw - 820px))}.tstores:not(.tmob) .tst svg{max-width:96px}}
 </style>
 <style>html,body{-webkit-text-size-adjust:100%}*{touch-action:manipulation}select,textarea{font-size:16px}
 :root{--bg:#0d4a4f;--panel:#072c2f;--panel2:#0a3a3e;--tile:#2459b8;--edge:#123a7d;--card:#123a7d;--yellow:#ffd84d;--mint:#b5e3de;--green:#1e8a3c;--greenedge:#0e5122;--red:#b3241a;--text:#fff;--dis:#9fc4c9;--px:'Press Start 2P',monospace}
@@ -4650,7 +4670,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '23.11. 12:00';
+var BUILD = '23.11. 19:25';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return !!state && (state.y0 || 1995) >= 2002; }
@@ -5220,6 +5240,24 @@ function render() {
   if (state && v === 'menu' && NEWV && !ui.pops.length) app.insertAdjacentHTML('afterbegin', updHtml());
   dskRender();
 }
+var STORE_PLAY = 'https://play.google.com/store/apps/details?id=de.trainerbank.app', STORE_IOS = 'https://apps.apple.com/de/app/id6836232032';
+function ttlQR(url, lab) {
+  try {
+    var q = qrcode(0, 'M'); q.addData(url); q.make();
+    var n = q.getModuleCount(), p = '', r, k;
+    for (r = 0; r < n; r++) for (k = 0; k < n; k++) if (q.isDark(r, k)) p += 'M' + (k + 2) + ' ' + (r + 2) + 'h1v1h-1z';
+    return '<svg viewBox="0 0 ' + (n + 4) + ' ' + (n + 4) + '" shape-rendering="crispEdges" role="img" aria-label="QR-Code: Trainerbank im ' + lab + '"><path d="' + p + '" fill="#07241b"/></svg>';
+  } catch (e) { return ''; }
+}
+function ttlStores() {
+  if (INAPP) return '';
+  var ios = /iPhone|iPad|iPod/.test(navigator.userAgent), and = /Android/.test(navigator.userAgent);
+  var c = [['Google Play', 'für Android', STORE_PLAY], ['App Store', 'für iPhone', STORE_IOS]];
+  if (ios) c.reverse();
+  var h = '<div class="tstores' + (ios || and ? ' tmob' : '') + '"><p class="tsth">AUCH ALS APP – KOSTENLOS</p><div class="tstrow">';
+  c.forEach(function (x) { h += '<a class="tst" href="' + x[2] + '" target="_blank" rel="noopener">' + ttlQR(x[2], x[0]) + '<span><b>' + x[0] + '</b><small>' + x[1] + '</small></span></a>'; });
+  return h + '</div><p class="tsts">QR-Code mit der Handykamera scannen</p></div>';
+}
 function ttlInfo(s) {
   var u = FM.clubTeam(s), tb = FM.table(s, u.lg), pl = 1; tb.forEach(function (t, k) { if (t.id === u.id) pl = k + 1; });
   return { u: u, pl: pl, n: tb.length };
@@ -5227,7 +5265,7 @@ function ttlInfo(s) {
 function vStart() {
   var mus = prefs.snd && prefs.mus !== false, A = TTLA ? '' : ' tin'; TTLA = 1;
   var top = '<div class="ttbar"><span class="tst">Stand ' + BUILD + '</span><button class="tmus' + (mus ? ' on' : '') + '" data-a="prefmus" aria-label="Musik ' + (mus ? 'ausschalten' : 'einschalten') + '">♪ Musik ' + (mus ? 'an' : 'aus') + '</button></div>';
-  var sub = ui.ldp || (SYNC_URL && ui.osIn) || ui.stP === 'new';
+  var sub = ui.ldp || (SYNC_URL && ui.osIn) || ui.stP === 'new' || ui.stP === 'imp';
   document.body.classList.toggle('tsb', !!sub);
   if (!sub) {
     var h = '<div class="ttl' + A + '">' + top + '<div class="thero"><div class="ttvslot"></div><p class="tkick">RETRO-FUSSBALLMANAGER</p><h1 class="tlogo">TRAINER<span>BANK</span></h1><p class="ttag">Übernimm einen kleinen Verein und führe ihn bis an die Spitze. Kader, Taktik, Stadion und Kasse liegen in deiner Hand – und jedes Spiel verfolgst du live am Spielfeldrand.</p><div class="tchips"><span>5 Länder</span><span>Live-Spiele</span><span>Pokal</span><span>Transfermarkt</span><span>Stadionausbau</span><span>Jugend</span></div></div><div class="tact">';
@@ -5238,9 +5276,10 @@ function vStart() {
     }
     h += '<button class="tbtn' + (saved ? '' : ' pri') + '" data-a="stnew">Neues Spiel' + (saved ? '' : ' <b>▶</b>') + '</button>';
     h += '<div class="trow">' + (SYNC_URL ? '<button class="tbtn sm" data-a="osin">Mit Code fortsetzen</button>' : '') + '<label class="tbtn sm flab">Aus Datei laden<input type="file" accept=".json,.txt,application/json" data-f="svload" hidden></label></div>';
-    h += '<div class="tfoot">' + (NEWV || (INAPP && !appUpd()) ? '' : '<button class="tlink" data-a="updcheck">' + (ui.updw ? 'Prüfe …' : 'Auf Updates prüfen') + '</button>') + (INAPP ? '' : '<a class="tlink" href="datenschutz.html" target="_blank" rel="noopener">Datenschutz</a>') + '</div>';
-    return h + '</div></div>';
+    h += '<div class="tfoot">' + (NEWV || (INAPP && !appUpd()) ? '' : '<button class="tlink" data-a="updcheck">' + (ui.updw ? 'Prüfe …' : 'Auf Updates prüfen') + '</button>') + (INAPP ? '' : '<a class="tlink" href="datenschutz.html" target="_blank" rel="noopener">Datenschutz</a>') + '<button class="tlink" data-a="stimp">Impressum</button>' + '</div>';
+    return h + '</div>' + ttlStores() + '</div>';
   }
+  if (ui.stP === 'imp') return '<div class="ttl tsubp">' + top + '<div class="tsubc"><button class="tback" data-a="stback">‹ Zurück</button><p class="tsh">IMPRESSUM</p><div class="panel timp"><p class="lbl">ANGABEN GEMÄSS § 5 DDG</p><p>Emil Azar<br>Sichelstraße 25<br>86179 Augsburg<br>Deutschland</p><p class="lbl">KONTAKT</p><p>Telefon: +49 176 26397741<br>E-Mail und weitere Angaben: ' + (INAPP ? 'trainerbank.eu/impressum.html' : '<a href="impressum.html" target="_blank" rel="noopener">trainerbank.eu/impressum.html</a>') + '</p><p class="lbl">VERBRAUCHERSTREITBEILEGUNG</p><p>Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p><p class="lbl">SPIELINHALTE</p><p>Alle Vereine, Spieler, Trainer, Wappen und Orte im Spiel sind frei erfunden. Ähnlichkeiten mit realen Vereinen oder Personen sind zufällig.</p>' + (INAPP ? '<p>Datenschutzerklärung: trainerbank.eu/datenschutz.html</p>' : '<p><a href="datenschutz.html" target="_blank" rel="noopener">Datenschutzerklärung</a></p>') + '</div></div></div>';
   var h = '';
   if (ui.ldp) h += '<div class="panel" style="border-color:var(--yellow)"><p style="margin:0 0 8px;font-size:15px">' + (ui.ldp.sync ? 'Online-Spielstand: ' : 'Datei: ') + '<b>' + esc(FM.clubTeam(ui.ldp.state).n) + '</b>, Saison ' + FM.seasonLabel(ui.ldp.state) + ', ' + (ui.ldp.state.round + 1) + '. Spieltag.' + (saved ? ' Der Spielstand auf diesem Gerät wird ersetzt.' : '') + '</p><div class="row"><button class="big" data-a="ldyes">Laden</button><button class="big sec2" data-a="ldno">Abbrechen</button></div></div>';
   else if (SYNC_URL && ui.osIn) h += '<div class="panel"><p class="lbl">MIT CODE FORTSETZEN</p>' + osEnterHtml() + '</div>';
@@ -8813,6 +8852,7 @@ app.addEventListener('click', function (ev) {
   }
   if (a === 'svfile') { if (!state) return; persist(); try { var sj = JSON.stringify({ app: 'trainerbank', ts: Date.now(), state: state }); if (INAPP) { window.TBApp.saveFile('trainerbank-spielstand-' + state.season + '-spieltag-' + state.round + '.json', sj); return; } var sb = new Blob([sj], { type: 'application/json' }), su = URL.createObjectURL(sb), sa = document.createElement('a'); sa.href = su; sa.download = 'trainerbank-spielstand-' + state.season + '-spieltag-' + state.round + '.json'; document.body.appendChild(sa); sa.click(); setTimeout(function () { sa.remove(); URL.revokeObjectURL(su); }, 2000); toast('Spielstand als Datei gesichert.'); } catch (e8) { toast('Das Sichern als Datei geht hier nicht.'); } return; }
   if (a === 'ldno') { ui.ldp = null; return render(); }
+  if (a === 'stimp') { ui.stP = 'imp'; render(); window.scrollTo(0, 0); return; }
   if (a === 'stnew') { ui.stP = 'new'; render(); window.scrollTo(0, 0); return; }
   if (a === 'stback') { ui.stP = null; ui.confirm = false; ui.packAsk = false; render(); window.scrollTo(0, 0); return; }
   if (a === 'ldyes') { var LD = ui.ldp; ui.ldp = null; if (!LD) return render(); if (LD.sync) return osApply(LD); ui.pops = []; ui.match = null; saved = { ts: Date.now(), state: LD.state }; SND.jingle(); enter(LD.state); persist(); return toast('Spielstand geladen.'); }
