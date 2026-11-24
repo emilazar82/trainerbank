@@ -171,20 +171,23 @@ function blob(r) { const m = new THREE.Mesh(new THREE.PlaneGeometry(r * 2, r * 2
 const SKIN = ['#f1cba4', '#e4b38a', '#cf9668', '#a36c45', '#71492c'];
 const HAIRC = ['#3b2a1a', '#1b1b1b', '#c9a24b', '#7a4a22', '#5a3a22', '#2a2a2a', '#d8c28a'];
 const BOOTS = ['#141414', '#141414', '#f4f4f4', '#c8302a', '#1e4fa8', '#141414'];
-function nhash(p) { if (p._nh !== undefined) return p._nh; let nh = 7; const nm = (p.n || '') + (p.key || '') + (p.T || 0); for (let i = 0; i < nm.length; i++) nh = (Math.imul(nh, 31) + nm.charCodeAt(i)) >>> 0; if (!p.n && !p.key) nh = (nh + (p.l || 0) * 977 + Math.round((p.fy || 0) * 1000)) >>> 0; p._nh = nh; return nh; }
+function nhash(p) { if (p._nh !== undefined) return p._nh; let nh = 7; const nm = (p.n || '') + (p.key || '') + (p.n ? '' : (p.T || 0)); for (let i = 0; i < nm.length; i++) nh = (Math.imul(nh, 31) + nm.charCodeAt(i)) >>> 0; if (!p.n && !p.key) nh = (nh + (p.l || 0) * 977 + Math.round((p.fy || 0) * 1000)) >>> 0; p._nh = nh; return nh; }
 function looks(p) {
   const K = EV.KIT || [{ s: '#ffd84d', h: '#12356f', k: '#8fd0ff' }, { s: '#e0402f', h: '#f4efe1', k: '#c3ccd6' }];
   const nh = nhash(p), sk = SKIN[(nh >>> 3) % 7 < 4 ? (nh >>> 3) % 3 : (nh >>> 3) % 5], hair = HAIRC[(nh >>> 6) % (sk === SKIN[0] ? 7 : 3)];
   const base = { skin: sk, face: '#2a1a12', hair, leg: sk, arm: sk, glove: sk, boot: BOOTS[(nh >>> 9) % 6], pole: '#f4f4f4', flag: '#ffd21f', hs: [0, 0, 2, 2, 0, 1, 3, 0, 2, 1, 4, 0][(nh >>> 12) % 12], nh, beard: [0, 0, 0, 0, 1, 0, 2, 0, 3, 0, 0, 1][(nh >>> 21) % 12], sc: 0.95 + ((nh >>> 15) % 11) / 100, num: 0, pat: 0 };
   if (p.key === 'td_r' || p.key === 'lin') { const c0 = new THREE.Color(K[0].s), c1 = new THREE.Color(K[1].s), dist = h => { const c = new THREE.Color(h); return Math.min(Math.abs(c.r - c0.r) + Math.abs(c.g - c0.g) + Math.abs(c.b - c0.b), Math.abs(c.r - c1.r) + Math.abs(c.g - c1.g) + Math.abs(c.b - c1.b)); };
     const rs = ['#1d1f24', '#2fa84f', '#e0402f', '#7a3d8f', '#f2c400'].sort((a, b) => dist(b) - dist(a))[0]; return Object.assign(base, { shirt: rs, shorts: '#1d1f24', socks: rs, trim: '#1d1f24', boot: '#0d0d0d', flagOn: p.key === 'lin' }); }
+  if (p.key === 'coach' && p.tee) return Object.assign(base, { shirt: '#f4f4f4', shorts: '#262b33', socks: '#262b33', trim: '#f4f4f4', leg: '#262b33', arm: base.skin, boot: '#101010', tee: p.tee });
   if (p.key === 'coach') return Object.assign(base, { shirt: p.col || '#262b33', shorts: '#262b33', socks: '#262b33', trim: '#f4efe1', leg: '#262b33', arm: p.col || '#262b33', boot: '#101010' });
+  if (p.key === 'fan') return Object.assign(base, { shirt: p.col || '#ffd84d', shorts: '#2a3340', socks: '#2a3340', trim: p.col2 || '#12356f', leg: '#2a3340', arm: base.skin, boot: '#f4f4f4' });
   if (p.key === 'foto') return Object.assign(base, { shirt: '#3a4048', shorts: '#2a2f36', socks: '#2a2f36', trim: '#3a4048', leg: '#2a2f36', arm: '#3a4048', boot: '#101010' });
   if (p.key === 'td_m') return Object.assign(base, { shirt: '#f4efe1', shorts: '#c8302a', socks: '#f4efe1', trim: '#c8302a', leg: '#c8302a', arm: '#f4efe1', boot: '#222' });
   if (p.key === 'td_ord') return Object.assign(base, { shirt: '#ff8a1c', shorts: '#2c3440', socks: '#2c3440', trim: '#ffe14d', leg: '#2c3440', arm: '#2c3440', boot: '#222' });
   if (p.key === 'td_flz') return Object.assign(base, { shirt: sk, shorts: '#e0402f', socks: sk, trim: sk, boot: '#f4efe1' });
   const k = K[p.kit] || K[0];
   if (p.l === 0) { const kc = k.k || '#8fd0ff', spI = EV.spon ? EV.spon[p.kit === 0 ? 0 : 1] : null; return Object.assign(base, { shirt: kc, shorts: '#1d1f24', socks: kc, trim: '#1d1f24', arm: kc, glove: '#f4f4f4', num: p._no || 1, sp: spI, spk: spI && spI.complete ? spI.src.length : 0, hs: base.hs === 1 ? 0 : base.hs }); }
+  if (p.tee) return Object.assign(base, { shirt: '#f4f4f4', shorts: k.h, socks: k.s, trim: k.s, tee: p.tee, num: 0 });
   const spI = EV.spon ? EV.spon[p.kit === 0 ? 0 : 1] : null; return Object.assign(base, { shirt: k.s, shorts: k.h, socks: k.s, trim: k.h, num: p._no || 0, pat: p.kit === 0 ? (k.p || 0) : 0, pc: k.pc || '#f4efe1', sp: spI, spk: spI && spI.complete ? spI.src.length : 0 });
 }
 const SHT = new Map();
@@ -202,6 +205,13 @@ function shirtTex(col, num, pat, pc, numCol, sp) {
     g.save(); g.translate(24, 47); g.fillStyle = 'rgba(255,255,255,.92)'; g.fillRect(-w / 2 - 1.5, -h / 2 - 1.5, w + 3, h + 3); g.drawImage(sp, -w / 2, -h / 2, w, h); g.restore(); }
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.wrapS = THREE.RepeatWrapping; t.anisotropy = 4;
   SHT.set(key, t); return t;
+}
+function teeTex(txt, col) {
+  const key = 'tee' + txt + col; if (SHT.has(key)) return SHT.get(key);
+  const c = cvs(128, 128), g = c.getContext('2d'); g.fillStyle = '#f4f4f4'; g.fillRect(0, 0, 128, 128);
+  g.fillStyle = col; g.fillRect(0, 0, 128, 10);
+  [24, 72].forEach(x => { g.save(); g.translate(x, 46); g.scale(0.4, 1.6); g.font = '900 21px Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = col; String(txt).split('\n').forEach((l, i, A) => g.fillText(l, 0, (i - (A.length - 1) / 2) * 20)); g.restore(); });
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.flipY = false; t.minFilter = THREE.LinearMipmapLinearFilter; t.wrapS = THREE.RepeatWrapping; SHT.set(key, t); return t;
 }
 const FTX = new Map();
 function shade(h, k) { const c = new THREE.Color(h); c.multiplyScalar(k); return '#' + c.getHexString(); }
@@ -255,7 +265,8 @@ function paint(e, p) {
   const lk = looks(p), key = JSON.stringify(lk); if (key === e.lk) return; e.lk = key;
   ['shirt', 'shorts', 'socks', 'skin', 'hair', 'boot', 'trim', 'glove', 'face', 'pole', 'flag', 'leg', 'arm'].forEach(n => { if (e.mats[n] && lk[n]) e.mats[n].color.set(lk[n]); });
   if (e.mats.lip) e.mats.lip.color.set(lk.skin).multiplyScalar(0.78);
-  if (e.mats.shirt) { e.mats.shirt.map = shirtTex(lk.shirt, lk.num, lk.pat, lk.pc || '#fff', lum(lk.shirt) > 0.55 ? '#16181d' : '#f6f6f2', lk.sp); e.mats.shirt.color.set('#ffffff'); e.mats.shirt.needsUpdate = true; }
+  if (e.mats.shirt && lk.tee) { e.mats.shirt.map = teeTex(lk.tee, lk.trim); e.mats.shirt.color.set('#ffffff'); e.mats.shirt.needsUpdate = true; }
+  else if (e.mats.shirt) { e.mats.shirt.map = shirtTex(lk.shirt, lk.num, lk.pat, lk.pc || '#fff', lum(lk.shirt) > 0.55 ? '#16181d' : '#f6f6f2', lk.sp); e.mats.shirt.color.set('#ffffff'); e.mats.shirt.needsUpdate = true; }
   if (e.mats.facepl) { const nh2 = lk.nh || 0; e.mats.facepl.map = faceTex(lk.skin, lk.hair, lk.hs, ['#5a3a1e', '#3d2716', '#4f7bb0', '#5c7a3e', '#2a1a10'][(nh2 >>> 18) % 5], lk.beard || 0); e.mats.facepl.color.set('#ffffff'); e.mats.facepl.needsUpdate = true; }
   e.hairs.forEach(m => { m.visible = m.name === 'hair_' + lk.hs; });
   (e.o.userData.flags || []).forEach(m => { m.visible = !!lk.flagOn; });
@@ -266,6 +277,7 @@ function play(e, n, opt) {
   if (e.cur === n && !opt.restart) { if (opt.ts !== undefined) a.timeScale = opt.ts; return; }
   const prev = e.acts[e.cur]; a.reset(); a.timeScale = opt.ts !== undefined ? opt.ts : 1;
   if (opt.rev) { a.time = a.getClip().duration; a.timeScale = -Math.abs(a.timeScale); }
+  if (opt.off !== undefined) a.time = (opt.off % 1) * a.getClip().duration;
   a.play(); if (prev && prev !== a) prev.crossFadeTo(a, opt.fade !== undefined ? opt.fade : 0.12, false);
   e.cur = n;
 }
@@ -308,7 +320,7 @@ function nearestTo(S, x, y) { let b = null, bd = 1e9; S.pl.forEach(p => { const 
 G._portrait = function (list, W, H, ev) {
   if (ev) EV = ev;
   R.setSize(W, H, false); CAM.aspect = W / H; CAM.fov = 20; CAM.updateProjectionMatrix();
-  const ents = list.map((p, i) => { const e = makeEnt(p); paint(e, p); e.o.position.set((i - (list.length - 1) / 2) * 0.62, 0, 0); e.o.rotation.y = p.ry || 0; e.sh.visible = false; play(e, 'idle'); e.mx.update(0.3); return e; });
+  const ents = list.map((p, i) => { const e = makeEnt(p); paint(e, p); e.o.position.set((i - (list.length - 1) / 2) * 0.62, 0, 0); e.o.rotation.y = p.ry !== undefined ? p.ry : 0.35; e.sh.visible = false; play(e, p.anim || 'idle'); e.mx.update(0.3); return e; });
   CAM.position.set(0, 1.4, (ev && ev.near) || 5.6); CAM.lookAt(0, 1.3, 0); SUN.position.set(-3, 8, 8); SUN.target.position.set(0, 0, 0); SUN.target.updateMatrixWorld();
   R.render(SC, CAM); ents.forEach(e => { SC.remove(e.o); SC.remove(e.sh); }); return R.domElement.toDataURL('image/png');
 };
@@ -537,4 +549,156 @@ G.drawCam = function (M, c2, cv, ev) {
   R.render(SC, CAM);
   c2.save(); c2.setTransform(1, 0, 0, 1, 0, 0); c2.imageSmoothingEnabled = false; c2.drawImage(R.domElement, 0, 0, cv.width, cv.height); c2.restore();
   return { goal, left, t, tc, fly };
+};
+
+// ---------- celebrations (team photo, promotion party) ----------
+function trophyMesh(plate) {
+  const gold = new THREE.MeshLambertMaterial({ color: '#e8c04a', emissive: '#3a2a00' }), silver = new THREE.MeshLambertMaterial({ color: '#d8dde4', emissive: '#22262c' });
+  const g = new THREE.Group();
+  if (plate) { const p = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.31, 0.035, 18), silver); g.add(p); const c = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.04, 14), gold); c.position.y = 0.005; g.add(c); g.rotation.x = 1.3; }
+  else { const pts = [[0.0, 0], [0.11, 0], [0.11, 0.03], [0.05, 0.06], [0.04, 0.16], [0.07, 0.2], [0.16, 0.3], [0.19, 0.45], [0.18, 0.5], [0.0, 0.5]].map(v => new THREE.Vector2(v[0], v[1]));
+    const cup = new THREE.Mesh(new THREE.LatheGeometry(pts, 12), gold); g.add(cup);
+    [-1, 1].forEach(s => { const h = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.018, 5, 10, Math.PI), gold); h.position.set(s * 0.19, 0.36, 0); h.rotation.z = s > 0 ? -Math.PI / 2 : Math.PI / 2; g.add(h); }); }
+  g.traverse(m => { if (m.isMesh) m.castShadow = true; }); return g;
+}
+function handPoint(e, bn) { const b = e.o.getObjectByName(bn); if (!b) return null; if (!b.userData.hand) { const h = new THREE.Object3D(); h.position.set(0, 0.27, 0); b.add(h); b.userData.hand = h; } return b.userData.hand; }
+let CERS = null;
+G.cerStop = function () { if (CERS) CERS.stop(); };
+G.cer = function (cv, C, ev, H) {
+  if (CERS) CERS.stop();
+  EV = ev || {}; H = H || {};
+  const c2 = cv.getContext('2d');
+  // night look
+  const save = { bg: SC.background, fog: SC.fog, vis: [] };
+  SC.background = new THREE.Color('#0a1222'); SC.fog = new THREE.Fog('#0a1222', 150, 330);
+  SC.children.forEach(o => { if (o.isMesh && o.geometry && o.geometry.type === 'SphereGeometry' && o.material.side === THREE.BackSide) { save.vis.push([o, o.visible]); o.visible = false; } });
+  ENT.forEach(e => { save.vis.push([e.o, e.o.visible], [e.sh, e.sh.visible]); e.o.visible = false; e.sh.visible = false; });
+  save.vis.push([BALL, BALL.visible], [BSH, BSH.visible]); BALL.visible = false; BSH.visible = false;
+  const hemi = SC.children.find(o => o.isHemisphereLight); const hemiI = hemi ? hemi.intensity : 1, hemiC = hemi ? hemi.color.clone() : null; if (hemi) { hemi.intensity = 0.75; hemi.color.set('#a9bcff'); }
+  const sunI = SUN.intensity, sunC = SUN.color.clone(); SUN.intensity = 2.7; SUN.color.set('#ffe6bf');
+  const rim = new THREE.DirectionalLight('#8fb0ff', 1.4); rim.position.set(0, 18, -40); SC.add(rim);
+  const fl = new THREE.PointLight('#ffffff', 0, 30, 1.6); SC.add(fl);
+  // stars
+  const sg = new THREE.BufferGeometry(), sp = []; for (let i = 0; i < 400; i++) { const a = Math.random() * Math.PI * 2, el = 0.12 + Math.random() * 0.9; sp.push(Math.cos(a) * Math.cos(el) * 300, Math.sin(el) * 300, Math.sin(a) * Math.cos(el) * 300); }
+  sg.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3)); const stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: '#dfe8ff', size: 1.2, sizeAttenuation: false, fog: false })); SC.add(stars);
+  const own = [stars, rim, fl];
+  const add = o => { SC.add(o); own.push(o); return o; };
+  const T = C.team || {}, K = EV.KIT || [], K0 = T.k1 || T.c1 || (K[0] && K[0].s) || '#ffd84d', K1 = T.k2 || T.c2 || T.k1 || (K[0] && K[0].h) || '#12356f';
+  EV.KIT = [{ s: K0, h: K1, k: '#59667a', p: T.kp || 0, pc: T.kc || '#f4efe1' }, K[1] || { s: '#e0402f', h: '#f4efe1', k: '#c3ccd6' }];
+  const ents = []; const mk = p => { p.kit = p.kit === undefined ? 0 : p.kit; const e = makeEnt(p); paint(e, p); ents.push([p, e]); e.p = p; return e; };
+  // confetti
+  const CN = 520, cg = new THREE.PlaneGeometry(0.12, 0.08), cm = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, vertexColors: false }), conf = new THREE.InstancedMesh(cg, cm, CN);
+  const cd = [], col = new THREE.Color(), dm = new THREE.Object3D(), pal = [K0, K1, '#ffffff', '#ffd84d'];
+  for (let i = 0; i < CN; i++) { const st = i % 9 === 0; cd.push({ st, x: (Math.random() - 0.5) * 22, y: 8 + Math.random() * 12, z: -9 + (Math.random() - 0.5) * 14, vy: 0.8 + Math.random() * 1.2, r: Math.random() * 6, rs: 2 + Math.random() * 5, ph: Math.random() * 6 }); conf.setColorAt(i, col.set(pal[i % 4])); }
+  conf.visible = false; add(conf);
+  // fireworks
+  const FW = []; const fwg = new THREE.BufferGeometry(); const FWN = 900; fwg.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(FWN * 3), 3)); fwg.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(FWN * 3), 3));
+  const fwp = add(new THREE.Points(fwg, new THREE.PointsMaterial({ size: 2.2, sizeAttenuation: false, vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })));
+  function burst(x, y, z) { const cc = new THREE.Color(['#ffd84d', '#ff5a3c', '#6df09a', '#8fd0ff', K0, '#ffffff'][Math.floor(Math.random() * 6)]); for (let i = 0; i < 70; i++) { const a = Math.random() * 6.28, b = Math.acos(2 * Math.random() - 1), v = 7 + Math.random() * 5; FW.push({ x, y, z, vx: Math.sin(b) * Math.cos(a) * v, vy: Math.cos(b) * v, vz: Math.sin(b) * Math.sin(a) * v, l: 1.6 + Math.random() * 0.6, c: cc }); } if (FW.length > FWN) FW.splice(0, FW.length - FWN); }
+  function fwStep(dt) { const P = fwg.attributes.position.array, Cc = fwg.attributes.color.array; let n = 0; for (let i = FW.length - 1; i >= 0; i--) { const f = FW[i]; f.l -= dt; if (f.l <= 0) { FW.splice(i, 1); continue; } f.vy -= 6 * dt; f.vx *= 0.985; f.vz *= 0.985; f.x += f.vx * dt; f.y += f.vy * dt; f.z += f.vz * dt; } FW.forEach((f, i) => { P[i * 3] = f.x; P[i * 3 + 1] = f.y; P[i * 3 + 2] = f.z; const k = Math.min(1, f.l); Cc[i * 3] = f.c.r * k; Cc[i * 3 + 1] = f.c.g * k; Cc[i * 3 + 2] = f.c.b * k; n = i + 1; }); fwg.setDrawRange(0, n); fwg.attributes.position.needsUpdate = true; fwg.attributes.color.needsUpdate = true; }
+  // water / smoke particles
+  const PN = 400, pg2 = new THREE.BufferGeometry(); pg2.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(PN * 3), 3)); pg2.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(PN * 3), 3));
+  const parts = add(new THREE.Points(pg2, new THREE.PointsMaterial({ size: 3, sizeAttenuation: false, vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false }))); const PS = [];
+  function pStep(dt) { const P = pg2.attributes.position.array, Cc = pg2.attributes.color.array; for (let i = PS.length - 1; i >= 0; i--) { const q = PS[i]; q.l -= dt; if (q.l <= 0) { PS.splice(i, 1); continue; } q.vy -= q.g * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.z += q.vz * dt; } PS.slice(0, PN).forEach((q, i) => { P[i * 3] = q.x; P[i * 3 + 1] = q.y; P[i * 3 + 2] = q.z; Cc[i * 3] = q.c.r; Cc[i * 3 + 1] = q.c.g; Cc[i * 3 + 2] = q.c.b; }); pg2.setDrawRange(0, Math.min(PN, PS.length)); pg2.attributes.position.needsUpdate = true; pg2.attributes.color.needsUpdate = true; }
+  let flash = 0, t = 0, last = performance.now(), alive = true, shown = false, shot = false;
+  const reveal = () => { if (!shown) { shown = true; H.reveal && H.reveal(); } };
+  const party = C.mode === 'party';
+  const sq = (party ? C.squad : [].concat(...(C.rows || []))) || [];
+  // ---------- team photo ----------
+  let photo = null, P = null;
+  if (!party) {
+    const plate = /MEISTER/.test(C.title || '') && !/EUROPA|WELT/.test(C.title || ''), tro = add(trophyMesh(plate)); tro.scale.setScalar(1.5);
+    const stage = add(box(14, 0.5, 1.6, lam({ color: '#20283a' }), 0, 0.25, -9.4)); stage.receiveShadow = true;
+    const bc = cvs(256, 32), bg = bc.getContext('2d'); bg.fillStyle = K1; bg.fillRect(0, 0, 256, 32); bg.fillStyle = K0; bg.fillRect(0, 26, 256, 6); bg.font = 'bold 18px Arial'; bg.textAlign = 'center'; bg.textBaseline = 'middle'; bg.fillStyle = '#ffffff'; bg.fillText(String(C.title || '').slice(0, 26), 128, 14);
+    const ban = add(new THREE.Mesh(new THREE.PlaneGeometry(14, 0.5), new THREE.MeshBasicMaterial({ map: tex(bc) }))); ban.position.set(0, 0.25, -8.59);
+    const RZ = [-9.4, -8.3, -7.3], RY = [0.5, 0, 0];
+    (C.rows || []).forEach((r, k) => { const m = r.length + (k === 1 && C.coach ? 1 : 0), spc = Math.min(0.72, 13 / Math.max(1, m));
+      r.forEach((pl, j) => { const x = (j - (m - 1) / 2) * spc, p = { n: pl.n, l: pl.p === 0 ? 0 : 2, _no: pl.sn || 0, kit: 0, T: 0 }; const e = mk(p); p.tx = x; p.tz = RZ[k]; p.ty = RY[k]; p.row = k; p.sx = x < 0 ? -8.5 - j * 0.6 : 8.5 + (r.length - j) * 0.6; p.del = k * 0.2 + Math.random() * 0.25; p.ph = Math.random(); e.o.position.set(p.sx, 0, p.tz + 3); });
+      if (k === 1 && C.coach) { const p = { n: C.coach, key: 'coach', l: 9, col: '#1f2530' }; const e = mk(p); p.tx = (r.length - (m - 1) / 2) * spc; p.tz = RZ[1]; p.ty = 0; p.row = 1; p.sx = 16; p.del = 1.0; e.o.position.set(16, 0, p.tz + 3); } });
+    const cap = ents.find(([p]) => p.row === 1 && Math.abs(p.tx) < 0.5) || ents.find(([p]) => p.row === 1) || ents[0];
+    for (let i = 0; i < 7; i++) { const p = { key: 'foto', n: 'f' + i, l: 9 }; const e = mk(p); const x = -6 + i * 2 + (Math.random() - 0.5); e.o.position.set(x * 0.75, 0, -0.9 + Math.random() * 0.5); e.o.rotation.y = Math.PI; p.fl = 0; p.x3 = x; }
+    photo = { tro, cap: cap && cap[1] };
+  } else {
+    // ---------- promotion party ----------
+    const fans = []; for (let i = 0; i < 44; i++) { const p = { key: 'fan', n: 'fan' + i, l: 9, col: [K0, K0, K1, '#f4f4f4', K0][i % 5], col2: K1, ph: Math.random() }; const e = mk(p); const a = Math.random() * 6.28; p.sx = Math.cos(a) * 30; p.sz = -36 + Math.random() * 4; p.tx = Math.cos(a) * (4.5 + Math.random() * 6); p.tz = 0.9 + Math.sin(a) * (3.5 + Math.random() * 4); e.o.position.set(p.sx, 0, p.sz); fans.push(p); }
+    const pl = sq.slice(0, 16).map((x, j) => { const p = { n: x.n, l: 2, _no: x.sn || 0, kit: 0, T: 0, ph: Math.random(), inner: j < 8 }; const e = mk(p); const a = (j < 8 ? j / 8 : (j - 8) / 8 + 0.06) * 6.28, r = j < 8 ? 0.78 : 1.7; p.cx = Math.cos(a) * r * 1.15; p.cz = 0.9 + Math.sin(a) * r * 0.8; e.o.position.set(-6 + Math.random() * 12, 0, -3 + Math.random() * 6); p.ox = e.o.position.x; p.oz = e.o.position.z; p.j = j; return p; });
+    const co = { n: C.coach || 'Trainer', key: 'coach', l: 9, col: '#1f2530' }; const ce = mk(co); ce.o.position.set(8, 0, 4);
+    P = { fans, pl, co, ce, ph3: false };
+  }
+  const BOARD = { x: 0, y: 0 };
+  function mv(e, p, tx, tz, dt, spd) { const x = e.o.position.x, z = e.o.position.z, dx = tx - x, dz = tz - z, d = Math.hypot(dx, dz); if (d < 0.05) { return false; } const st = Math.min(d, spd * dt); e.o.position.x += dx / d * st; e.o.position.z += dz / d * st; e.o.rotation.y = Math.atan2(dx, dz); return true; }
+  function step() {
+    if (!alive) return;
+    if (H.alive && !H.alive()) { stop(); return; }
+    const now = performance.now(), dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
+    if (!party) {
+      // walk in, then pose
+      ents.forEach(([p, e]) => {
+        if (p.key === 'foto') { p.fl = Math.max(0, p.fl - dt); const busy = t > 3.0 && (t > 4.6 && t < 5.2 ? 0.5 : shot ? 0.06 : 0.03); if (busy && Math.random() < busy * 60 * dt) { p.fl = 0.12; flash = Math.max(flash, 0.05); fl.position.set(e.o.position.x, 1.4, e.o.position.z - 0.4); fl.intensity = 60; H.shutter && Math.random() < 0.4 && H.shutter(); } play(e, 'kneel'); e.sh.position.set(e.o.position.x, 0.03, e.o.position.z); return; }
+        const moving = t > p.del && mv(e, p, p.tx, p.tz, dt, 5.2);
+        e.o.position.y += ((t > 2.4 ? p.ty : 0) - e.o.position.y) * Math.min(1, dt * 6);
+        e.sh.position.set(e.o.position.x, e.o.position.y + 0.03, e.o.position.z);
+        if (moving) play(e, 'run', { ts: 1.4 });
+        else { let want = 0, d = want - e.o.rotation.y; while (d > Math.PI) d -= 6.283; while (d < -Math.PI) d += 6.283; e.o.rotation.y += d * Math.min(1, dt * 8);
+          if (photo.cap === e && t > 3.0) play(e, 'lift');
+          else if (t < 3.4) play(e, 'cheer', { ts: 0.75 + (p.ph || 0) * 0.5, off: p.ph || 0 });
+          else if (t < 6.2) play(e, p.row === 2 ? 'kneel' : p.key === 'coach' ? 'armsx' : 'armsx');
+          else play(e, p.row === 2 ? 'kneel' : (p.ph > 0.5 ? 'cheer' : 'lift'), { ts: 0.7 + (p.ph || 0) * 0.6, off: p.ph || 0 }); }
+        e.mx.update(dt);
+      });
+      ents.forEach(([p, e]) => { if (p.key === 'foto') e.mx.update(dt); });
+      if (t > 5.0 && !shot) { shot = true; flash = 1; H.shutter && H.shutter(6); H.cheer && H.cheer(); reveal(); }
+      if (t > 0.6) conf.visible = true;
+      if (t > 5.2 && Math.random() < dt * 2.2) burst((Math.random() - 0.5) * 70, 28 + Math.random() * 18, -44 - Math.random() * 10);
+      // trophy in the captain's hands
+      if (photo.cap) { const hl = handPoint(photo.cap, 'farm.L'), hr = handPoint(photo.cap, 'farm.R'); if (hl && hr) { const a = new THREE.Vector3(), b = new THREE.Vector3(); hl.getWorldPosition(a); hr.getWorldPosition(b); photo.tro.position.copy(a.add(b).multiplyScalar(0.5)); photo.tro.position.y += photo.tro.children.length > 2 ? 0.02 : 0.08; } photo.tro.visible = t > 2.6; }
+      const push = Math.min(1, t / 6);
+      CAM.fov = 27 - push * 3; CAM.updateProjectionMatrix(); CAM.position.set(Math.sin(t * 0.25) * 0.6, 2.9, 4.6 - push * 0.8); CAM.lookAt(0, 1.45, -8.6);
+    } else {
+      const { fans, pl, co, ce } = P;
+      if (t > 0.5) reveal();
+      fans.forEach(p => { const e = ents.find(x => x[0] === p)[1]; const m = mv(e, p, p.tx, p.tz, dt, 6 + (p.n.length % 3)); if (!m) { e.o.rotation.y = Math.atan2(-e.o.position.x, -e.o.position.z); play(e, p.ph > 0.7 ? 'wave' : 'cheer', { ts: 0.75 + p.ph * 0.6, off: p.ph }); } else play(e, 'run', { ts: 1.3 + p.ph * 0.4 }); e.sh.position.set(e.o.position.x, 0.03, e.o.position.z); e.o.visible = !P.ph3; e.sh.visible = !P.ph3; e.mx.update(dt); });
+      if (!P.ph3) {
+        const ring = t > 2.6, TS = [[3.3, 1.05], [4.35, 0.85], [5.3, 0.65]]; let toss = 0, push = 0; const held = t > 2.95 && t < 6.25;
+        TS.forEach(([s0, h], j) => { const u = (t - s0) / 0.85; if (u > 0 && u < 1) toss = h * 4 * u * (1 - u); if (u > -0.18 && u < 0.12) push = 1; if (t > s0 && !P['h' + j]) { P['h' + j] = 1; H.hey && H.hey(); } });
+        pl.forEach(p => { const e = ents.find(x => x[0] === p)[1]; const m = ring ? mv(e, p, p.cx, p.cz, dt, 4) : false;
+          if (!m) { if (ring) e.o.rotation.y = Math.atan2(-e.o.position.x, -e.o.position.z); play(e, ring && held && p.inner ? (push || toss > 0.05 ? 'lift' : 'cheer') : 'cheer', { ts: 0.8 + p.ph * 0.5, off: p.ph }); } else play(e, 'run', { ts: 1.4 });
+          e.sh.position.set(e.o.position.x, 0.03, e.o.position.z); e.mx.update(dt); });
+        const cm2 = t > 1.8 && t < 2.95 && mv(ce, co, 0, 0.9, dt, 3.5);
+        P.lie = P.lie || 0; P.lie += ((held ? 1 : 0) - P.lie) * Math.min(1, dt * 7);
+        if (cm2) { play(ce, 'run', { ts: 1.2 }); ce.o.position.y = 0; }
+        else { play(ce, 'cheer', { ts: 1.3 }); const lie = P.lie; ce.o.rotation.set(-Math.PI / 2 * lie + Math.sin(t * 3) * 0.08 * lie, 0, Math.sin(t * 2.2) * 0.12 * lie); ce.o.position.set(0, (1.55 + toss) * lie, 0.9 * lie); }
+        ce.sh.position.set(0, 0.03, 0); ce.mx.update(dt);
+        if (t > 6.0 && t < 7.4) { if (!P.splash) { P.splash = 1; H.splash && H.splash(); } for (let i = 0; i < 14; i++) PS.push({ x: (Math.random() - 0.5) * 0.6, y: 2.4 + Math.random() * 0.4, z: -0.6, vx: (Math.random() - 0.5) * 1.2, vy: 1 + Math.random(), vz: 2.2 + Math.random(), g: 9.8, l: 0.8, c: new THREE.Color('#9fd3ff') }); }
+        const sh = 0.05; CAM.fov = 30; CAM.updateProjectionMatrix(); CAM.position.set(Math.sin(t * 0.3) * 3 + Math.sin(t * 7.1) * sh, 3.4 + Math.sin(t * 5.3) * sh, 9.5 - Math.min(2, t * 0.25)); CAM.lookAt(0, 1.6, 0.9);
+        if (t > 7.4) { P.ph3 = true; H.hey && H.hey(); pl.forEach((p, j) => { p.tee = C.sl ? 'AUFSTEIGER\n' + C.sl : 'AUFSTEIGER'; const e = ents.find(x => x[0] === p)[1]; e.lk = ''; paint(e, p); const n = pl.length; e.o.position.set(-L / 2 + 4.2, 0, (j - (n - 1) / 2) * 0.75); e.o.rotation.set(0, Math.PI / 2, 0); e.o.position.y = 0; }); ce.o.visible = false; ce.sh.visible = false; }
+      } else {
+        pl.forEach((p, j) => { const e = ents.find(x => x[0] === p)[1]; play(e, j % 3 === 1 ? 'wave' : 'cheer', { ts: 0.75 + p.ph * 0.5, off: p.ph }); e.sh.position.set(e.o.position.x, 0.03, e.o.position.z); e.mx.update(dt); });
+        if (Math.random() < dt * 30) { const z = (Math.random() - 0.5) * 50; for (let i = 0; i < 2; i++) PS.push({ x: -L / 2 - 13 - Math.random() * 6, y: 3 + Math.random() * 5, z, vx: 0.4, vy: 1.2, vz: (Math.random() - 0.5) * 0.6, g: -0.3, l: 2.5, c: new THREE.Color(Math.random() < 0.5 ? '#ff5a3c' : '#c9c9c9') }); }
+        if (Math.random() < dt * 1.2) burst(-L / 2 - 25 - Math.random() * 10, 28 + Math.random() * 14, (Math.random() - 0.5) * 50);
+        const tt = t - 7.4; CAM.fov = 32; CAM.updateProjectionMatrix(); CAM.position.set(-L / 2 + 12.5 - Math.min(2, tt * 0.3), 2.1, Math.sin(tt * 0.35) * 2.5); CAM.lookAt(-L / 2 + 2, 1.6, 0);
+      }
+      conf.visible = t > 0.6;
+    }
+    // confetti & crowd
+    if (conf.visible) { const ox = party && P.ph3 ? -L / 2 + 6 : 0, oz = party && !P.ph3 ? 0 : party ? 0 : -6; cd.forEach((q, i) => { q.y -= q.vy * dt; if (q.y < 0) q.y = 10 + Math.random() * 4; q.r += q.rs * dt; dm.position.set(ox + q.x + Math.sin(t * 2 + q.ph) * 0.3, q.y, oz + q.z); dm.rotation.set(q.r, q.r * 0.7, q.st ? Math.sin(t * 3 + q.ph) : 0); dm.scale.set(q.st ? 0.3 : 1, q.st ? 7 : 1, 1); dm.updateMatrix(); conf.setMatrixAt(i, dm.matrix); }); conf.instanceMatrix.needsUpdate = true; }
+    const jump = Math.floor(t * 7) % 2; CROWD.forEach(c => { c.m.map = jump ? c.alt : c.base; }); waveFlags(t, true);
+    fl.intensity *= Math.exp(-dt * 25); if (flash > 0.6) { fl.position.set(0, 2, -3); fl.intensity = 120; }
+    fwStep(dt); pStep(dt);
+    SUN.target.position.set(party && P.ph3 ? -L / 2 + 3 : 0, 0, party ? 0 : -8); SUN.position.set(SUN.target.position.x - 6, 30, SUN.target.position.z + 22); SUN.target.updateMatrixWorld();
+    R.render(SC, CAM);
+    c2.save(); c2.setTransform(1, 0, 0, 1, 0, 0); c2.imageSmoothingEnabled = false; c2.drawImage(R.domElement, 0, 0, cv.width, cv.height);
+    if (flash > 0) { c2.fillStyle = 'rgba(255,255,255,' + Math.min(1, flash) + ')'; c2.fillRect(0, 0, cv.width, cv.height); flash = Math.max(0, flash - dt * (flash > 0.5 ? 1.6 : 6)); }
+    c2.restore();
+    requestAnimationFrame(step);
+  }
+  function stop() {
+    if (!alive) return; alive = false; CERS = null;
+    ents.forEach(([p, e]) => { SC.remove(e.o); SC.remove(e.sh); }); own.forEach(o => SC.remove(o));
+    SC.background = save.bg; SC.fog = save.fog; save.vis.forEach(([o, v]) => { o.visible = v; }); if (hemi) { hemi.intensity = hemiI; hemi.color.copy(hemiC); } SUN.intensity = sunI; SUN.color.copy(sunC);
+    CAM.fov = 26; CAM.updateProjectionMatrix(); CROWD.forEach(c => { c.m.map = c.base; });
+  }
+  H.whistle && H.whistle(); setTimeout(() => { if (alive) H.cheer && H.cheer(); }, 400);
+  requestAnimationFrame(step);
+  CERS = { stop }; return CERS;
 };

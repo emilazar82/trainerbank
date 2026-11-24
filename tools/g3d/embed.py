@@ -6,6 +6,6 @@ i=s.index('<script type="text/plain" id="g3dglb">')+len('<script type="text/plai
 open(p,'w').write(s)
 a="loadLocal();\nif (saved) ui.name = "
 i=s.find(a); j=s.find('\n',i+len(a))
-s=s[:j+1]+"window.__LB={get ui(){return ui},get state(){return state},go:go,FM:FM,render:render,get M(){return ui.match},mkCam:mkCam};\n"+s[j+1:]
+s=s[:j+1]+"window.__LB={get ui(){return ui},get state(){return state},go:go,FM:FM,render:render,get M(){return ui.match},mkCam:mkCam,cerStart:cerStart,partyObj:partyObj,coachN:coachN};\n"+s[j+1:]
 open('/home/claude/game/tmp_sub.html','w').write(s)
 print('embedded',len(lib),len(glb))

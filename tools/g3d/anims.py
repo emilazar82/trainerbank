@@ -95,8 +95,8 @@ anim('catch', {0: ready, 6: P(spine=(25, 0, 0), thigh_L=(-35, 0, 0), thigh_R=(-3
 anim('jump', {0: ready, 6: P(uarm_L=(-170, 0, -5), uarm_R=(-170, 0, 5), thigh_L=(10, 0, 0), shin_L=(40, 0, 0), shin_R=(20, 0, 0), loc=(0, 0.5, 0)),
               12: P(uarm_L=(-165, 0, -5), uarm_R=(-165, 0, 5), loc=(0, 0.45, 0)), 20: ready})
 
-c0 = P(uarm_L=(-160, 0, -20), uarm_R=(-160, 0, 20), farm_L=(-15, 0, 0), farm_R=(-15, 0, 0), head=(-15, 0, 0), spine=(-6, 0, 0), loc=(0, 0, 0))
-c1 = P(uarm_L=(-150, 0, -35), uarm_R=(-150, 0, 35), farm_L=(-30, 0, 0), farm_R=(-30, 0, 0), head=(-25, 0, 0), spine=(-10, 0, 0), thigh_L=(-30, 0, 0), shin_L=(60, 0, 0), thigh_R=(10, 0, 0), shin_R=(40, 0, 0), loc=(0, 0.28, 0))
+c0 = P(uarm_L=(-150, 0, 40), uarm_R=(-150, 0, -40), farm_L=(-12, 0, 0), farm_R=(-12, 0, 0), head=(-15, 0, 0), spine=(-6, 0, 0), loc=(0, 0, 0))
+c1 = P(uarm_L=(-140, 0, 58), uarm_R=(-140, 0, -58), farm_L=(-25, 0, 0), farm_R=(-25, 0, 0), head=(-25, 0, 0), spine=(-10, 0, 0), thigh_L=(-30, 0, 0), shin_L=(60, 0, 0), thigh_R=(10, 0, 0), shin_R=(40, 0, 0), loc=(0, 0.28, 0))
 anim('cheer', {0: c0, 6: c1, 12: c0, 18: mirror(c1), 24: c0})
 
 fallb = {0: idle,
@@ -124,3 +124,16 @@ anim('carry', {0: P(spine=(30, 0, 0), uarm_L=(-60, 0, 0), uarm_R=(-60, 0, 0), fa
 mh = P(uarm_L=(-150, 0, -45), uarm_R=(-150, 0, 45), farm_L=(-120, 0, 0), farm_R=(-120, 0, 0), head=(10, 0, 0), spine=(4, 0, 0))
 mh2 = dict(mh); mh2['head'] = (14, 12, 0); mh2['spine'] = (8, 0, 0)
 anim('miss', {0: idle, 8: mh, 24: mh2, 40: mh})
+ax = P(uarm_L=(-14, 64, 10), uarm_R=(-14, -64, -10), farm_L=(-94, 0, 0), farm_R=(-86, 0, 0), chest=(-3, 0, 0), head=(-4, 0, 0), thigh_L=(0, 0, 5), thigh_R=(0, 0, -5))
+ax2 = dict(ax); ax2['chest'] = (-1, 0, 0); ax2['loc'] = (0, -0.008, 0)
+anim('armsx', {0: ax, 20: ax2, 40: ax})
+kn = P(loc=(0, -0.43, 0), spine=(8, 0, 0), thigh_L=(-88, 0, 4), shin_L=(88, 0, 0), foot_L=(0, 0, 0), thigh_R=(-2, 0, -4), shin_R=(92, 0, 0), foot_R=(45, 0, 0),
+       uarm_L=(-35, 0, -8), farm_L=(-40, 0, 0), uarm_R=(-15, 20, 12), farm_R=(-70, 0, 0), head=(-4, 0, 0))
+kn2 = dict(kn); kn2['loc'] = (0, -0.435, 0)
+anim('kneel', {0: kn, 20: kn2, 40: kn})
+li = P(uarm_L=(-172, 0, -12), uarm_R=(-172, 0, 12), farm_L=(-25, 0, 0), farm_R=(-25, 0, 0), head=(-18, 0, 0), spine=(-5, 0, 0))
+li2 = dict(li); li2['loc'] = (0, 0.18, 0); li2['uarm.L'] = (-176, 0, -6); li2['uarm.R'] = (-176, 0, 6); li2['thigh.L'] = (-20, 0, 0); li2['shin.L'] = (40, 0, 0); li2['shin.R'] = (25, 0, 0)
+anim('lift', {0: li, 8: li2, 16: li})
+wv = P(uarm_R=(-20, 0, 150), farm_R=(-30, 0, 0), uarm_L=(0, 0, -8), farm_L=(-12, 0, 0), head=(-6, -8, 0))
+wv2 = dict(wv); wv2['farm.R'] = (-5, 0, 0); wv2['uarm.R'] = (-20, 0, 135)
+anim('wave', {0: wv, 10: wv2, 20: wv})
