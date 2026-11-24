@@ -5,7 +5,7 @@ import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js';
 const L = 105, WD = 68, RW = 368, RH = 224;
 const G = { ok: false, err: null }; let EV = {};
 window.G3D = G;
-let R, SC, CAM, BASE, CLIPS = {}, PITCH, PCV, PKEY = '', CROWD = [], CRT = [], NETS = [], BALL, BSH, ADS = [], ADKEY = '';
+let RING, RO = null, RX = null, RZ = 0, R, SC, CAM, BASE, CLIPS = {}, PITCH, PCV, PKEY = '', CROWD = [], CRT = [], NETS = [], BALL, BSH, ADS = [], ADKEY = '';
 const ENT = new Map(); let SUN, FANKEY = '', LASTOWN = null, BPH = 0; const BOFF = { x: 0, z: 0 }; let FRAME = 0, LASTPASS = null, HEADED = null, CAMX = 0, CAMZ = 0, CAMT = null, LT = 0;
 const rnd = (s => () => (s = (s * 16807) % 2147483647) / 2147483647)(11);
 
@@ -156,6 +156,8 @@ function build() {
   [-1, 1].forEach(s => { box(7, 1.6, 1.6, lam({ color: '#c9d3dc', transparent: true, opacity: 0.85 }), s * 9, 0.8, -WD / 2 - 6.6); });
   BALL = makeBall(0.19); SC.add(BALL);
   BSH = blob(0.5); SC.add(BSH);
+  RING = new THREE.Mesh(new THREE.RingGeometry(0.62, 0.86, 28), new THREE.MeshBasicMaterial({ color: '#ffe066', transparent: true, opacity: 0.85, depthWrite: false }));
+  RING.rotation.x = -Math.PI / 2; RING.renderOrder = 2; RING.visible = false; SC.add(RING);
 }
 const BLOBT = (() => { const c = cvs(32, 32), g = c.getContext('2d'), gr = g.createRadialGradient(16, 16, 2, 16, 16, 16); gr.addColorStop(0, 'rgba(0,0,0,.45)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); const t = new THREE.CanvasTexture(c); return t; })();
 function makeBall(r) {
@@ -459,7 +461,14 @@ G.draw = function (M, c2, cv, ev) {
   if (bz - CAMZ > MZ) CAMZ = bz - MZ; else if (CAMZ - bz > MZ) CAMZ = bz + MZ;
   const zoom = S.focus ? 0.86 : 1, FOV = SMALL ? 19 : 24;
   if (CAM.fov !== FOV) { CAM.fov = FOV; CAM.updateProjectionMatrix(); }
-  BALL.scale.setScalar(SMALL ? 1.7 : 1.3); BSH.scale.multiplyScalar(SMALL ? 1.5 : 1.2);
+  BALL.scale.setScalar(1);
+  // glowing ring under the player who has the ball (fades out while the ball is free)
+  { const ow = S.own && !S.pass && !S.own.down ? ENT.get(S.own) : null;
+    if (ow) RO = ow; if (RO && RO.o.parent) { RX = RO.o.position.x; RZ = RO.o.position.z; }
+    const op = Math.max(0, Math.min(0.85, (RING.material.opacity || 0) + (ow ? dt * 6 : -dt * 5)));
+    RING.material.opacity = op; RING.visible = S.mode !== 'cam' && op > 0.02 && RX !== null;
+    if (RX !== null) RING.position.set(RX, 0.045, RZ); const pu = 1 + Math.sin(now / 160) * 0.06; RING.scale.set(pu, pu, 1); }
+  
   CAM.position.set(CAMX, 12.2 * zoom, CAMZ * 0.75 + 30.5 * zoom);
   CAM.lookAt(CAMX, 0, CAMZ * 0.85 - 3.5);
   SUN.target.position.set(CAMX, 0, CAMZ * 0.8); SUN.position.set(CAMX - 22, 48, CAMZ * 0.8 + 30); SUN.target.updateMatrixWorld();
@@ -470,9 +479,11 @@ G.draw = function (M, c2, cv, ev) {
 };
 // keeps the ball readable on small screens: dark outline + white core drawn on top of the 3D image
 function ballMark(c2, cv, small) {
+  if (!small) return;
+  const k = cv.width / (cv.clientWidth || cv.width);
   V3.copy(BALL.position).project(CAM); if (V3.z > 1 || Math.abs(V3.x) > 1.05 || Math.abs(V3.y) > 1.05) return;
-  const k = cv.width / (cv.clientWidth || cv.width), x = (V3.x + 1) / 2 * cv.width, y = (1 - V3.y) / 2 * cv.height, r = (small ? 2.6 : 2.1) * k;
-  c2.save(); c2.setTransform(1, 0, 0, 1, 0, 0); c2.beginPath(); c2.arc(x, y, r, 0, Math.PI * 2); c2.fillStyle = '#fbfbf6'; c2.fill(); c2.lineWidth = Math.max(1.5, 0.9 * k); c2.strokeStyle = '#0b1220'; c2.stroke(); c2.restore();
+  const x = (V3.x + 1) / 2 * cv.width, y = (1 - V3.y) / 2 * cv.height;
+  c2.save(); c2.setTransform(1, 0, 0, 1, 0, 0); c2.beginPath(); c2.arc(x, y, 1.2 * k, 0, Math.PI * 2); c2.fillStyle = '#fbfbf6'; c2.fill(); c2.lineWidth = Math.max(1.1, 0.55 * k); c2.strokeStyle = '#0b1220'; c2.stroke(); c2.restore();
 }
 // phones: real-time shadows off from the start, elsewhere only when frames get slow (players keep their blob shadows)
 let PF = 0, PN = 0, SHOFF = false;
@@ -509,7 +520,7 @@ function scr(e, name, time) {
 }
 function camEnt(C, key, p) { C._g3 = C._g3 || {}; if (!C._g3[key]) C._g3[key] = p; const o = C._g3[key]; let e = ENT.get(o); if (!e) { e = makeEnt(o); ENT.set(o, e); } e.seen = FRAME; paint(e, o); e.o.visible = true; e.sh.visible = true; return e; }
 G.drawCam = function (M, c2, cv, ev) {
-  EV = ev || {}; const S = M.sim, C = S.camSc; FRAME++;
+  EV = ev || {}; const S = M.sim, C = S.camSc; FRAME++; RING.visible = false;
   const now = performance.now(); LT = now;
   const AA = EV.AA, KA = EV.KA;
   // hide match players
@@ -594,7 +605,7 @@ G.cer = function (cv, C, ev, H) {
   SC.background = new THREE.Color('#0a1222'); SC.fog = new THREE.Fog('#0a1222', 150, 330);
   SC.children.forEach(o => { if (o.isMesh && o.geometry && o.geometry.type === 'SphereGeometry' && o.material.side === THREE.BackSide) { save.vis.push([o, o.visible]); o.visible = false; } });
   ENT.forEach(e => { save.vis.push([e.o, e.o.visible], [e.sh, e.sh.visible]); e.o.visible = false; e.sh.visible = false; });
-  save.vis.push([BALL, BALL.visible], [BSH, BSH.visible]); BALL.visible = false; BSH.visible = false;
+  save.vis.push([BALL, BALL.visible], [BSH, BSH.visible], [RING, RING.visible]); BALL.visible = false; BSH.visible = false; RING.visible = false;
   const hemi = SC.children.find(o => o.isHemisphereLight); const hemiI = hemi ? hemi.intensity : 1, hemiC = hemi ? hemi.color.clone() : null; if (hemi) { hemi.intensity = 0.75; hemi.color.set('#a9bcff'); }
   const sunI = SUN.intensity, sunC = SUN.color.clone(); SUN.intensity = 2.7; SUN.color.set('#ffe6bf');
   const rim = new THREE.DirectionalLight('#8fb0ff', 1.4); rim.position.set(0, 18, -40); SC.add(rim);
