@@ -534,7 +534,8 @@ G.drawCam = function (M, c2, cv, ev) {
   const cpx = gx - dist, cpz = lat + (air ? dir * 0.8 : 0), cpy = C.shot === 'header' ? 2.25 : C.bike ? 2.1 : C.shot === 'volley' ? 0.85 : 0.19;
   const tz = (C.tx - 184) * PXM, ty = Math.max(0.19, (C.GL - C.ty) * PXM);
   // attacker
-  const ap = { n: 'att', kit: C.ka, l: C.gk ? 0 : 3, _no: 9 };
+  if (C._rno === undefined) C._rno = [7, 9, 10, 11, 14, 17, 19, 20][Math.floor(Math.random() * 8)];
+  const ap = { n: C.snm || 'att', kit: C.ka, l: C.gk ? 0 : 3, _no: C.sno !== undefined ? C.sno : C._rno };
   const A = camEnt(C, 'att', ap);
   const appr = Math.min(1, t / Math.max(0.2, tc - 0.12)), runD = C.fk ? 2.6 : dead ? 5 : 4;
   let axp = cpx - 0.55 - (1 - appr) * runD, azp = cpz - dir * 0.25 - (1 - appr) * dir * (dead ? 1.0 : 1.1);
@@ -545,7 +546,7 @@ G.drawCam = function (M, c2, cv, ev) {
   else if (!hit || t < tc + 0.6) scr(A, C.shot === 'header' || C.bike ? 'header' : 'kick', t - (tc - kickT));
   else scr(A, goal ? 'cheer' : 'miss', t - tc - 0.6);
   // keeper
-  const K = camEnt(C, 'kp', { n: 'kp', kit: C.kd, l: 0 });
+  const K = camEnt(C, 'kp', { n: C.knm || 'kp', kit: C.kd, l: 0, _no: C.kno || 1 });
   const kt = t - C.kt, kz0 = 0, kx = gx - 0.6;
   let kz = kz0 + (kt < 0 ? Math.sin(S.t * 4) * 0.08 : 0);
   if (kt >= 0 && (C.kp === 'high' || C.kp === 'low')) { const dv = C.kdir > 0 ? 'dive_l' : 'dive_r'; scr(K, dv, kt * 1.05); const KD = KA[C.kp]; const reach = KD[3] * PXM; kz = C.kdir * Math.max(0, Math.min(1, kt / 0.4)) * Math.max(0, reach - 1.5); }
