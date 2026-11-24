@@ -684,7 +684,7 @@ G.cer = function (cv, C, ev, H) {
       if (t > 0.6) conf.visible = true;
       if (t > 5.2 && Math.random() < dt * 2.2) burst((Math.random() - 0.5) * 70, 28 + Math.random() * 18, -44 - Math.random() * 10);
       // trophy in the captain's hands
-      if (photo.cap) { const hl = handPoint(photo.cap, 'farm.L'), hr = handPoint(photo.cap, 'farm.R'); if (hl && hr) { const a = new THREE.Vector3(), b = new THREE.Vector3(); hl.getWorldPosition(a); hr.getWorldPosition(b); photo.tro.position.copy(a.add(b).multiplyScalar(0.5)); photo.tro.position.y += photo.tro.children.length > 2 ? 0.02 : 0.08; } photo.tro.visible = t > 2.6; }
+      if (photo.cap) { const hl = handPoint(photo.cap, 'farmL'), hr = handPoint(photo.cap, 'farmR'); if (hl && hr) { const a = new THREE.Vector3(), b = new THREE.Vector3(); hl.getWorldPosition(a); hr.getWorldPosition(b); photo.tro.position.copy(a.add(b).multiplyScalar(0.5)); photo.tro.position.y += photo.tro.children.length > 2 ? 0.02 : 0.08; } photo.tro.visible = t > 2.6; }
       const push = Math.min(1, t / 6);
       CAM.fov = 27 - push * 3; CAM.updateProjectionMatrix(); CAM.position.set(Math.sin(t * 0.25) * 0.6, 2.9, 4.6 - push * 0.8); CAM.lookAt(0, 1.45, -8.6);
     } else {
