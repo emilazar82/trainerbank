@@ -410,7 +410,8 @@ G.draw = function (M, c2, cv, ev) {
   EV = ev || {};
   const S = M.sim; FRAME++;
   const now = performance.now(), dt = LT ? Math.min(0.1, (now - LT) / 1000) : 0.016; LT = now;
-  const flip = !!M.flipX;
+  const flip = !!M.flipX, cw = cv.clientWidth || cv.width, SMALL = cw < 600;
+  perfGuard(dt, SMALL);
   if (!XTRA.length) initExtras();
   const pk = S.tf === undefined ? '' : String(Math.round(S.tf / 4));
   if (pk !== PKEY) { PKEY = pk; drawPitch(S); }
@@ -449,25 +450,45 @@ G.draw = function (M, c2, cv, ev) {
   BALL.visible = S.mode !== 'cam';
   NETS.forEach((n, i) => { const side = flip ? 1 - i : i; n.position.x = S.shake > 0 && S.shakeSide !== side ? Math.sin(S.t * 50) * 0.18 * (i ? 1 : -1) : 0; });
   // TV camera
-  const f = S.focus || { x: S.bx, y: S.by }; const [fx, fz] = W2(f.x, f.y, flip);
+  let fx = bx, fz = bz; if (S.focus) [fx, fz] = W2(S.focus.x, S.focus.y, flip);
   const tx = Math.max(-45, Math.min(45, fx)), tz = Math.max(-24, Math.min(26, fz));
-  CAMX += (tx - CAMX) * Math.min(1, dt * 2.2); CAMZ += (tz - CAMZ) * Math.min(1, dt * 1.6);
-  const zoom = S.focus ? 0.86 : 1;
-  if (CAM.fov !== 26) { CAM.fov = 26; CAM.updateProjectionMatrix(); }
+  CAMX += (tx - CAMX) * Math.min(1, dt * 3.2); CAMZ += (tz - CAMZ) * Math.min(1, dt * 2.4);
+  // the ball never leaves the picture: hard leash around the camera centre
+  const MX = SMALL ? 8 : 13, MZ = SMALL ? 7 : 10;
+  if (bx - CAMX > MX) CAMX = bx - MX; else if (CAMX - bx > MX) CAMX = bx + MX;
+  if (bz - CAMZ > MZ) CAMZ = bz - MZ; else if (CAMZ - bz > MZ) CAMZ = bz + MZ;
+  const zoom = S.focus ? 0.86 : 1, FOV = SMALL ? 19 : 24;
+  if (CAM.fov !== FOV) { CAM.fov = FOV; CAM.updateProjectionMatrix(); }
+  BALL.scale.setScalar(SMALL ? 1.7 : 1.3); BSH.scale.multiplyScalar(SMALL ? 1.5 : 1.2);
   CAM.position.set(CAMX, 12.2 * zoom, CAMZ * 0.75 + 30.5 * zoom);
   CAM.lookAt(CAMX, 0, CAMZ * 0.85 - 3.5);
   SUN.target.position.set(CAMX, 0, CAMZ * 0.8); SUN.position.set(CAMX - 22, 48, CAMZ * 0.8 + 30); SUN.target.updateMatrixWorld();
   R.render(SC, CAM);
   c2.save(); c2.setTransform(1, 0, 0, 1, 0, 0); c2.imageSmoothingEnabled = false; c2.drawImage(R.domElement, 0, 0, cv.width, cv.height); c2.restore();
-  if (EV.names !== false) nameTags(S, c2, cv);
+  if (EV.names !== false) nameTags(S, c2, cv, SMALL, bx, bz);
+  if (BALL.visible) ballMark(c2, cv, SMALL);
 };
+// keeps the ball readable on small screens: dark outline + white core drawn on top of the 3D image
+function ballMark(c2, cv, small) {
+  V3.copy(BALL.position).project(CAM); if (V3.z > 1 || Math.abs(V3.x) > 1.05 || Math.abs(V3.y) > 1.05) return;
+  const k = cv.width / (cv.clientWidth || cv.width), x = (V3.x + 1) / 2 * cv.width, y = (1 - V3.y) / 2 * cv.height, r = (small ? 2.6 : 2.1) * k;
+  c2.save(); c2.setTransform(1, 0, 0, 1, 0, 0); c2.beginPath(); c2.arc(x, y, r, 0, Math.PI * 2); c2.fillStyle = '#fbfbf6'; c2.fill(); c2.lineWidth = Math.max(1.5, 0.9 * k); c2.strokeStyle = '#0b1220'; c2.stroke(); c2.restore();
+}
+// phones: real-time shadows off from the start, elsewhere only when frames get slow (players keep their blob shadows)
+let PF = 0, PN = 0, SHOFF = false;
+function perfGuard(dt, small) {
+  if (SHOFF) return;
+  PF = PF * 0.95 + dt * 0.05; PN++;
+  if (small || (PN > 90 && PF > 0.042)) { SHOFF = true; R.shadowMap.enabled = false; SUN.castShadow = false; SC.traverse(o => { if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.needsUpdate = true; }); }); }
+}
 const V3 = new THREE.Vector3();
 function shortName(n) { const p = String(n || '').trim().split(/\s+/); if (p.length < 2) return p[0] || ''; return p[0].charAt(0) + '. ' + p.slice(1).join(' '); }
-function nameTags(S, c2, cv) {
-  const cw = cv.clientWidth || cv.width, k = cv.width / cw, fs = Math.round(Math.max(9.5, Math.min(12, cw / 62)) * k);
+function nameTags(S, c2, cv, small, bx, bz) {
+  const cw = cv.clientWidth || cv.width, k = cv.width / cw, fs = Math.round((small ? 8 : Math.max(9.5, Math.min(12, cw / 62))) * k);
   c2.save(); c2.setTransform(1, 0, 0, 1, 0, 0); c2.font = '700 ' + fs + "px 'Space Grotesk', system-ui, sans-serif"; c2.textAlign = 'center'; c2.textBaseline = 'top'; c2.lineJoin = 'round';
   const tags = [];
   S.pl.forEach(p => { const e = ENT.get(p); if (!e || !e.o.visible || p.hide || !p.n) return;
+    if (small && p !== S.own && Math.hypot(e.o.position.x - bx, e.o.position.z - bz) > 13) return;
     V3.set(e.o.position.x, 0, e.o.position.z).project(CAM); if (V3.z > 1 || V3.x < -1.1 || V3.x > 1.1 || V3.y < -1.2 || V3.y > 1.1) return;
     tags.push({ x: (V3.x + 1) / 2 * cv.width, y: (1 - V3.y) / 2 * cv.height + fs * 0.25, t: shortName(p.n), mine: p.kit === 0 }); });
   tags.sort((a, b) => a.y - b.y);
