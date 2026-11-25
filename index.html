@@ -8880,7 +8880,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '25.11. 21:59';
+var BUILD = '25.11. 22:03';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return true; }
@@ -11323,7 +11323,7 @@ function ddLog(t) { var D = ui.dd; D.log.unshift(ddTime(D.t) + ' · ' + t); }
 function ddAdd(min) { var D = ui.dd; D.t = Math.min(D.end, D.t + min); }
 function ddTick() {
   var D = ui.dd; if (!D || ui.view !== 'dday' || D.done) return ddStop();
-  D.t += 3; var ch = false;
+  D.t += 3; var ch = false; if (D.cur && !D.cur.on && Math.floor(D.t / 3) % 2 === 0) { try { bueBell(); } catch (eB) { } } if (DDMUS && D.t % 30 === 0) { try { NGM.tension(Math.max(0, Math.min(1, (D.t - 660) / 380))); } catch (eT) { } }
   if (D.cur && D.t >= D.cur.exp) { ddLog('Anruf verpasst: ' + D.cur.who + ' hat aufgelegt.'); D.cur = null; D.say = 'Zu spät, der Anrufer hat aufgelegt.'; D.mood = 'ernst'; ch = true; }
   if (!D.cur && D.calls.length && D.t >= D.calls[0].at) { ddRing(D.calls.shift()); ch = true; }
   if (D.t >= D.end) { D.t = D.end; D.done = 1; D.cur = null; D.say = 'Achtzehn Uhr. Das Fenster ist zu, Trainer. Feierabend!'; D.mood = 'lacht'; ddStop(); try { SND.jingle('title'); } catch (e) { } return render(); }
@@ -11338,7 +11338,7 @@ function ddRing(c) {
   else { var best = u.pl.filter(function (p) { return p.loan === undefined && !(p.inj > 3) && !state.offers.some(function (o) { return o.i === p.i; }); }).sort(function (a, b) { return b.s - a.s; }).slice(2, 8), pp = best[Math.floor(Math.random() * best.length)], cls = state.teams.filter(function (t) { return t.id !== u.id && t.lg < 7 && t.lg <= u.lg; });
     if (!pp || !cls.length) return; var cc = cls[Math.floor(Math.random() * cls.length)]; state.offers.push({ i: pp.i, c: cc.id, fee: Math.max(1000, Math.round(FM.value(pp) * (1.25 + 0.2 * Math.random()) / 1000) * 1000), exp: state.round + 2, dl: 1 });
     D.cur = { k: 'bid', i: pp.i, c: cc.id, late: 1, who: tnName(cc.n + '#m', TN_MGR) + ' von ' + cc.n, exp: D.t + 45 }; D.say = 'Trainer! ' + cc.n + ' in letzter Minute – die wollen ' + pp.n + ' und zahlen offenbar verrückt viel!'; }
-  D.mood = 'ueberrascht'; try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) { }
+  D.mood = 'ueberrascht'; try { bueBell(); } catch (eB) { } try { if (navigator.vibrate) navigator.vibrate([120, 80, 120]); } catch (e) { }
 }
 function ddOfferK(cur) { var k = -1; state.offers.forEach(function (o, n) { if (o.i === cur.i && o.c === cur.c) k = n; }); return k; }
 function ddAct(v) {
@@ -11367,8 +11367,9 @@ function ddAct(v) {
     else { D.say = 'Für ' + po.n + ' findet sich heute kein Abnehmer.'; D.mood = 'ernst'; ddLog(po.n + ' angeboten: kein Interesse.'); }
     persist(); return render(); }
 }
-function ddStop() { if (DDT) { clearInterval(DDT); DDT = null; } }
-function ddRun() { var D = ui.dd; if (!D) return; if (D.fax) { D.fax = 0; FX.over(document.getElementById('ddB'), 'burst', { dur: 2.5 }); } if (D.done) return; if (!DDT) DDT = setInterval(ddTick, 1000); var im = document.getElementById('ddF'), b = document.getElementById('ddBub'); if (im && b) { try { fanStop(); fanRun(im, b, D.say || '', bueWho().f, D.mood || 'neutral', null, 1); } catch (e) { b.textContent = D.say || ''; } } }
+var DDMUS = false;
+function ddStop() { if (DDT) { clearInterval(DDT); DDT = null; } if (DDMUS) { DDMUS = false; try { NGM.stop(0.8); } catch (e) { } } }
+function ddRun() { var D = ui.dd; if (!D) return; if (!D.done && !DDMUS) { DDMUS = true; try { SND.music(false); NGM.start(); } catch (eM) { } } if (DDMUS) { try { NGM.tension(Math.max(0, Math.min(1, (D.t - 660) / 380))); } catch (eT) { } } if (D.fax) { D.fax = 0; FX.over(document.getElementById('ddB'), 'burst', { dur: 2.5 }); } if (D.done) return; if (!DDT) DDT = setInterval(ddTick, 1000); var im = document.getElementById('ddF'), b = document.getElementById('ddBub'); if (im && b) { try { fanStop(); fanRun(im, b, D.say || '', bueWho().f, D.mood || 'neutral', null, 1); } catch (e) { b.textContent = D.say || ''; } } }
 function vDday() {
   var D = ui.dd; if (!D) return sub('Deadline Day') + '<div class="panel"><p class="hint" style="margin:0">Heute ist kein letzter Transfertag.</p></div>';
   var u = FM.userTeam(state), cur = D.cur, W = bueWho(), h = sub('Deadline Day');
