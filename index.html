@@ -7170,10 +7170,10 @@ function train(state) {
   return { ups: ups, inj: inj };
 }
 var TEV = {
-  tired: { t: 'Überspielt', q: '{n} wirkt überspielt. Der Fitnesstrainer rät zu zwei freien Tagen.', o: [['Zwei Tage frei', 'Frische +10, Form −1'], ['Durchziehen', 'Form +1, aber 30 % Verletzungsrisiko']] },
-  extra: { t: 'Extraschichten', q: '{n} will nach dem Training Extraschichten schieben und an seinem Wert „{a}“ arbeiten.', o: [['Erlauben', 'gute Chance auf +1, Frische −6'], ['Ablehnen', 'Moral −0,5']] },
-  party: { t: 'Mannschaftsabend', q: 'Der Mannschaftsrat schlägt einen gemeinsamen Abend vor. Die Kasse zahlt {c}.', o: [['Zusagen', 'Moral +0,5 und Eingespieltheit +3, Frische −2'], ['Absagen', 'nichts passiert']] },
-  video: { t: 'Videoanalyse', q: 'Der Co-Trainer will eine Abendsitzung mit Videoanalyse ansetzen.', o: [['Ansetzen', 'Eingespieltheit +5, Frische −1'], ['Lassen', 'nichts passiert']] }
+  tired: { t: 'Überspielt', q: ['{n} wirkt überspielt. Der Fitnesstrainer rät zu zwei freien Tagen.', '{n} schleppt sich durchs Training. Die Beine sind schwer, sagt der Fitnesstrainer.', 'Die Laufwerte von {n} sind im Keller. Eine Pause würde ihm guttun.', '{n} gähnt schon beim Aufwärmen. Der Akku scheint leer zu sein.', 'Der Physiotherapeut warnt: {n} braucht dringend Erholung.'], o: [['Zwei Tage frei', 'Frische +10, Form −1'], ['Durchziehen', 'Form +1, aber 30 % Verletzungsrisiko']] },
+  extra: { t: 'Extraschichten', q: ['{n} will nach dem Training Extraschichten schieben und an seinem Wert „{a}“ arbeiten.', '{n} fragt, ob er nach dem Training länger bleiben darf. Er will an „{a}“ feilen.', 'Ehrgeiz pur: {n} möchte Sonderschichten für „{a}“ einlegen.', '{n} ist mit seinem Wert „{a}“ unzufrieden und will zusätzlich üben.', 'Der Co-Trainer meldet: {n} will freiwillig an „{a}“ arbeiten.'], o: [['Erlauben', 'gute Chance auf +1, Frische −6'], ['Ablehnen', 'Moral −0,5']] },
+  party: { t: 'Mannschaftsabend', q: ['Der Mannschaftsrat schlägt einen gemeinsamen Abend vor. Die Kasse zahlt {c}.', 'Die Spieler wünschen sich einen Kegelabend. Der Verein müsste {c} übernehmen.', 'Der Kapitän regt ein gemeinsames Essen an. Kostenpunkt: {c}.', 'Grillen auf dem Trainingsgelände? Der Mannschaftsrat hat {c} veranschlagt.', 'Die Mannschaft möchte zusammen ins Kino und danach essen gehen. Das kostet {c}.'], o: [['Zusagen', 'Moral +0,5 und Eingespieltheit +3, Frische −2'], ['Absagen', 'nichts passiert']] },
+  video: { t: 'Videoanalyse', q: ['Der Co-Trainer will eine Abendsitzung mit Videoanalyse ansetzen.', 'Der Co-Trainer hat das letzte Spiel zusammengeschnitten und möchte es der Mannschaft zeigen.', 'Vorschlag aus dem Trainerbüro: heute Abend Videostudium des nächsten Gegners.', 'Der Co-Trainer hat Fehler entdeckt, die er der Mannschaft am Bildschirm zeigen will.', 'Eine Stunde Taktik am Fernseher? Der Co-Trainer hält das für nötig.'], o: [['Ansetzen', 'Eingespieltheit +5, Frische −1'], ['Lassen', 'nichts passiert']] }
 };
 // ---------- Privatleben: Spieler und Trainer
 var FAMN = ['ledig', 'verlobt', 'verheiratet', 'geschieden'];
@@ -7424,7 +7424,7 @@ function trainEvNew(state) {
 function trainEvInfo(state) {
   var e = state.tev; if (!e) return null; var u = state.teams[state.uid], p = e.i !== undefined ? findP(u, e.i) : null, D = TEV[e.k];
   if (!D || (e.i !== undefined && !p)) return null;
-  return { n: e.n, t: D.t, q: D.q.replace('{n}', p ? p.n : '').replace('{a}', e.a !== undefined ? ATN[e.a] : '').replace('{c}', e.c ? fmtEv(e.c) : ''), o: D.o };
+  return { n: e.n, t: D.t, q: (Array.isArray(D.q) ? D.q[(+e.n || 0) % D.q.length] : D.q).replace('{n}', p ? p.n : '').replace('{a}', e.a !== undefined ? ATN[e.a] : '').replace('{c}', e.c ? fmtEv(e.c) : ''), o: D.o };
 }
 function fmtEv(v) { return String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €'; }
 function trainEv(state, o) {
@@ -8881,7 +8881,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '25.11. 20:58';
+var BUILD = '25.11. 21:06';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return true; }
