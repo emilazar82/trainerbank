@@ -225,9 +225,8 @@ td.up{color:#6df09a}td.dn{color:#ff9a8f}
 .cerp{position:relative;overflow:hidden;aspect-ratio:16/9;border:3px solid #c9a227;box-shadow:0 0 0 3px #052826,0 0 24px rgba(255,216,77,.35);background:#000}.cerp img{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:auto;transform-origin:50% 38%;animation:cerkb 16s ease-out both,cerpl 1.3s 1s ease-in-out infinite alternate}@keyframes cerkb{0%{transform:scale(1.28);filter:brightness(2.4) saturate(.5)}6%{filter:brightness(1.25)}100%{transform:scale(1)}}@keyframes cerpl{0%{filter:brightness(1)}100%{filter:brightness(1.12) saturate(1.12)}}
 @media (prefers-reduced-motion:reduce){.cerp img{animation:none}}
 .repst .ngsp{top:9%}.reprec{position:absolute;left:1.2%;top:50%;width:1.6%;aspect-ratio:1;border-radius:50%;background:#ff2a1f;box-shadow:0 0 8px 3px rgba(255,42,31,.8);animation:bueblink 1s steps(2) infinite;z-index:2}
-.repmic{position:absolute;left:104%;bottom:4%;width:13%;height:32%;margin-left:0;background:linear-gradient(#2b2b2b 0 42%,#8a8676 42% 48%,#1b1b1b 48%);border:2px solid #0b1622;border-radius:40% 40% 12% 12%/28% 28% 8% 8%;animation:repmic 2.2s ease-in-out infinite alternate;transform-origin:50% 100%;text-decoration:none;z-index:3}@keyframes repmic{0%{transform:rotate(-4deg) translateY(2px)}100%{transform:rotate(4deg) translateY(-2px)}}
 .repa{display:block;width:100%;margin:0 0 8px;text-align:left;font:600 14px/1.35 'Space Grotesk',system-ui,sans-serif!important;text-shadow:none!important;padding:11px 12px}.repc{animation:buering .12s steps(2) 12}
-@media (prefers-reduced-motion:reduce){.repmic,.reprec,.repc{animation:none}}
+@media (prefers-reduced-motion:reduce){.reprec,.repc{animation:none}}
 .fxc{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;image-rendering:auto}
 #fxPage{position:fixed;inset:0;pointer-events:none;z-index:70;transition:background 1.2s}#fxPage.sad{background:rgba(20,30,60,.28)}#fxPage.dark{background:rgba(0,0,0,.45)}
 .fxw{position:relative;line-height:0}
@@ -8881,7 +8880,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '25.11. 21:06';
+var BUILD = '25.11. 21:49';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return true; }
@@ -11060,7 +11059,7 @@ var REP_Q = {
   ]
 };
 var REP_RE = {
-  good: ['nickt und schreibt eifrig mit.', 'lächelt: „Das nehme ich so mit.“', 'hält das Mikrofon noch etwas näher.', '„Klare Worte, danke.“', 'wirkt beeindruckt.', '„Das wird den Fans gefallen.“', 'notiert sich den Satz wörtlich.'],
+  good: ['nickt und schreibt eifrig mit.', 'lächelt: „Das nehme ich so mit.“', '„Klare Worte, danke.“', 'wirkt beeindruckt.', '„Das wird den Fans gefallen.“', 'notiert sich den Satz wörtlich.'],
   mid: ['zieht eine Augenbraue hoch.', '„Aha. Notiert.“', 'blättert in den Unterlagen.', 'nickt knapp.', '„Das lasse ich mal so stehen.“', 'tippt etwas ins Telefon.'],
   bad: ['schüttelt den Kopf.', '„Das werden einige anders sehen.“', 'grinst: „Das gibt eine Schlagzeile.“', 'hakt sofort nach, bekommt aber keine Antwort mehr.', '„Mutig, das so zu sagen.“', 'tauscht einen Blick mit dem Kameramann.']
 };
@@ -11129,7 +11128,7 @@ function repRun() {
 function vRep() {
   var Z = ui.rep; if (!Z) return sub('Mixed Zone') + '<div class="panel"><p class="hint" style="margin:0">Kein Reporter in Sicht.</p></div>';
   var C = Z.C, h = sub('Mixed Zone'), ar = function (v) { return v > 0 ? '<span style="color:#6df09a">' + (v > 2 ? '▲▲' : '▲') + ' besser</span>' : v < 0 ? '<span style="color:#ff9a8f">' + (v < -2 ? '▼▼' : '▼') + ' schlechter</span>' : '<span style="color:#b5e3de">unverändert</span>'; };
-  h += '<div class="ngw"><div class="ngst ngs2 repst" id="repS"><img class="bg" src="' + PICS.mixzone + '" alt="Mixed Zone am Spielfeldrand bei Nacht: blaue Pressewand, Fernsehkamera und Tonangel, im Hintergrund das Stadion unter Flutlicht" width="576" height="324"><i class="reprec" aria-hidden="true"></i><div class="ngsp" id="ngSp"><img id="repF" src="' + NGF[Z.fk].neutral + '" alt="' + (Z.P.fem ? 'Reporterin' : 'Reporter') + ' mit Mikrofon" width="224" height="224"><b>' + esc(Z.P.n.toUpperCase()) + '</b><u class="repmic" aria-hidden="true"></u></div><div class="ngbub" id="ngBub"></div></div>';
+  h += '<div class="ngw"><div class="ngst ngs2 repst" id="repS"><img class="bg" src="' + PICS.mixzone + '" alt="Mixed Zone am Spielfeldrand bei Nacht: blaue Pressewand, Fernsehkamera und Tonangel, im Hintergrund das Stadion unter Flutlicht" width="576" height="324"><i class="reprec" aria-hidden="true"></i><div class="ngsp" id="ngSp"><img id="repF" src="' + NGF[Z.fk].neutral + '" alt="' + (Z.P.fem ? 'Reporterin' : 'Reporter') + '" width="224" height="224"><b>' + esc(Z.P.n.toUpperCase()) + '</b></div><div class="ngbub" id="ngBub"></div></div>';
   h += '<div class="panel"><p class="title" style="margin:0">' + esc(Z.P.n) + '</p><p class="hint" style="margin:2px 0 0">' + esc(Z.out) + ' · ' + (Z.done ? 'Interview beendet' : 'Frage ' + (Z.i + 1) + ' von ' + Z.qs.length) + '</p></div>';
   if (Z.done) {
     h += '<div class="panel"><p class="lbl">SO KAM ES AN</p>' + kv('Stimmung in der Kabine', ar(Z.eff.mo)) + kv('Fans', ar(Z.eff.fans)) + kv('Vorstand', ar(Z.eff.conf)) + (Z.best ? '<p class="hint" style="margin:8px 0 0">Morgen in der Zeitung: „' + esc(Z.best.a) + '“</p>' : '') + '</div><button class="big" data-a="rep" data-val="done">Zurück zum Spielbericht</button>';
