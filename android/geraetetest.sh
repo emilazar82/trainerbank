@@ -17,6 +17,9 @@ adb shell am force-stop $PKG || { sleep 5; adb wait-for-device; adb shell am for
 
 echo "== 2. Neuere Spieldatei in die App legen (wie nach einem Download)"
 sed "s/var BUILD = '[^']*'/var BUILD = 'GERAETETEST'/" index.html > /tmp/idx.html
+# Auf gut 24 MB auffüllen: Die Größe der Spieldatei darf keine Rolle mehr spielen.
+{ printf '<!-- '; head -c 10000000 /dev/zero | tr '\0' 'x'; printf ' -->\n'; } >> /tmp/idx.html
+ls -l /tmp/idx.html
 echo '{"b":"GERAETETEST","t":9999999999}' > /tmp/stamp.json
 adb push /tmp/idx.html /data/local/tmp/tb-index.html >/dev/null || exit 1
 adb push /tmp/stamp.json /data/local/tmp/tb-stamp.json >/dev/null || exit 1

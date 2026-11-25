@@ -79,11 +79,13 @@ final class GameUpdater {
 
     private double cachedT() { return cachedFile.exists() ? stampT(readFile(stampFile)) : 0; }
 
-    /** Die geladene Spieldatei, wenn sie neuer ist als die mitgelieferte, sonst null. */
-    String newerHtml() {
+    /**
+     * Die geladene Spieldatei, wenn sie neuer ist als die mitgelieferte, sonst null. Zurück kommt die Datei
+     * selbst und nicht ihr Inhalt: Die Ansicht liest sie direkt von der Platte, damit die Größe keine Rolle spielt.
+     */
+    File newerFile() {
         if (cachedT() <= bundledT()) return null;
-        String html = readFile(cachedFile);
-        return html != null && html.length() > 500_000 ? html : null;
+        return cachedFile.isFile() && cachedFile.length() > 500_000 ? cachedFile : null;
     }
 
     private static byte[] fetch(String url, int timeoutMs) throws Exception {

@@ -131,7 +131,9 @@ public class MainActivity extends ComponentActivity {
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 // Die App bleibt bei der eigenen Spieldatei; alles andere wird nicht geladen.
-                return !START_URL.equals(request.getUrl().toString());
+                String u = request.getUrl().toString();
+                java.io.File f = updater.newerFile();
+                return !(START_URL.equals(u) || (f != null && Uri.fromFile(f).toString().equals(u)));
             }
 
             @Override
@@ -197,16 +199,14 @@ public class MainActivity extends ComponentActivity {
     }
 
     /**
-     * Lädt das Spiel in der neuesten vorhandenen Fassung. Eine nachgeladene Fassung läuft unter derselben
-     * Adresse wie die mitgelieferte, damit der Spielstand (localStorage, IndexedDB) derselbe bleibt.
+     * Lädt das Spiel in der neuesten vorhandenen Fassung. Eine nachgeladene Fassung liegt wie die
+     * mitgelieferte unter file://, damit der Spielstand (localStorage, IndexedDB) derselbe bleibt.
      */
     private void loadGame() {
-        String html = updater.newerHtml();
-        if (html != null) {
-            web.loadDataWithBaseURL(START_URL, html, "text/html", "UTF-8", null);
-        } else {
-            web.loadUrl(START_URL);
-        }
+        java.io.File f = updater.newerFile();
+        // Als Datei laden statt als Text übergeben: so gibt es keine Größengrenze. Mitgelieferte und
+        // nachgeladene Fassung liegen beide unter file://, der Spielstand-Speicher ist derselbe.
+        web.loadUrl(f != null ? Uri.fromFile(f).toString() : START_URL);
     }
 
     /** Fragt die Projektseite nach einer neueren Spieldatei; notify meldet auch "nichts Neues". */
