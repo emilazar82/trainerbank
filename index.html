@@ -248,7 +248,7 @@ td.up{color:#6df09a}td.dn{color:#ff9a8f}
 @keyframes kzb{0%{transform:rotate(-58deg)}100%{transform:rotate(58deg)}}@keyframes kzpul{0%{filter:brightness(.94)}100%{filter:brightness(1.1) saturate(1.15)}}
 .kzt{height:10px;background:#062f2c;border:2px solid #0b1622;margin:0 0 10px}.kzt i{display:block;height:100%;background:#ffd84d;animation:kzt 12s linear forwards}@keyframes kzt{0%{width:100%}70%{background:#ffb347}100%{width:0;background:#ff7a6a}}
 .ngbt .big small,.panel>.big small{display:block;font:600 11px/1.3 'Space Grotesk',system-ui,sans-serif;opacity:.85;margin-top:3px;text-shadow:none}
-.ddbue{margin-bottom:0}.ddclk{position:absolute;left:3%;top:5%;background:#0b1622;color:#6df09a;border:3px solid #2f8f88;font-family:var(--px);font-size:20px;padding:8px 10px;box-shadow:4px 4px 0 rgba(0,0,0,.4);z-index:2}.ddclk.hot{color:#ff7a6a;border-color:#ff7a6a;animation:bueblink 1s steps(2) infinite}.ddbue .buebub{left:34%;right:33%}
+.ddbue{margin-bottom:0}.ddclk{position:absolute;left:3%;top:5%;background:#0b1622;color:#6df09a;border:3px solid #2f8f88;font-family:var(--px);font-size:20px;padding:8px 10px;box-shadow:4px 4px 0 rgba(0,0,0,.4);z-index:2}.ddclk.hot{color:#ff7a6a;border-color:#ff7a6a;animation:bueblink 1s steps(2) infinite}.ddbue .buebub{left:3%;right:31%;top:30%;bottom:auto;max-height:40%;overflow:hidden}.ddbue .buebub:after{display:none}
 .ddbar{position:relative;height:22px;background:#062f2c;border:3px solid #0b1622;margin:6px 0 10px;display:flex;justify-content:space-between;align-items:center;padding:0 6px;font:700 10px/1 'Space Grotesk',system-ui,sans-serif;color:#eaf7f4}.ddbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#2f8f88,#ffd84d 70%,#ff7a6a);opacity:.75;transition:width 1s linear}.ddbar span{position:relative}
 .ddcall{border-color:#ffd84d}
 @media (prefers-reduced-motion:reduce){.kzlv img,.kzlv i{animation:none}}
@@ -8880,7 +8880,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '25.11. 21:49';
+var BUILD = '25.11. 21:59';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return true; }
