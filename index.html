@@ -8880,7 +8880,7 @@ function icon(name, size) {
   return '<img alt="" aria-hidden="true" src="' + IC[name] + '" width="' + size + '" height="' + size + '">';
 }
 var CREST = '<svg aria-hidden="true" viewBox="0 0 16 16" width="42" height="42" style="flex-shrink:0"><path d="M2 1h12v8l-6 6-6-6z" fill="var(--yellow)"/><path d="M4 3h8v5l-4 4-4-4z" fill="var(--bg)"/><path d="M7 4h2v5h-2z" fill="#fff"/></svg>';
-var BUILD = '25.11. 22:15';
+var BUILD = '26.11. 08:45';
 function coachN() { return state && state.coach ? String(state.coach) : ''; }
 function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function euro() { return true; }
@@ -10725,7 +10725,7 @@ function tnWage() {
 }
 function vTneg() {
   var S = ui.tn; if (!S) return '';
-  return sub('Transfergespräch') + '<div class="ngw"><div class="ngst ngs2" id="tnS"><img class="bg" src="' + TNIMG + '" alt="' + (S.stage === 'fee' ? 'Büro von ' + esc(S.club.n) : 'Gespräch mit dem Berater des Spielers') + '" width="640" height="360"><div class="ngsp" id="ngSp"><img id="tnF" src="' + TNF[tnFk(S)].neutral + '" alt="Gesprächspartner" width="224" height="224"><b id="tnNm"></b></div><div class="ngbub" id="ngBub"></div><img class="nghs" id="ngHs" src="' + NGIMG.hs + '" alt="Handschlag über dem unterschriebenen Vertrag" width="640" height="360" hidden></div>'
+  return sub('Verhandlung') + '<div class="ngw"><div class="ngst ngs2" id="tnS"><img class="bg" src="' + TNIMG + '" alt="' + (S.stage === 'fee' ? 'Büro von ' + esc(S.club.n) : 'Gespräch mit dem Berater des Spielers') + '" width="640" height="360"><div class="ngsp" id="ngSp"><img id="tnF" src="' + TNF[tnFk(S)].neutral + '" alt="Gesprächspartner" width="224" height="224"><b id="tnNm"></b></div><div class="ngbub" id="ngBub"></div><img class="nghs" id="ngHs" src="' + NGIMG.hs + '" alt="Handschlag über dem unterschriebenen Vertrag" width="640" height="360" hidden></div>'
     + '<div class="ngrow"><div class="panel ngpp"><div><p class="title" style="margin:0" id="tnWho"></p><p class="hint" style="margin:2px 0 6px" id="tnRole"></p><p class="ngl">STIMMUNG</p><b id="ngMd" style="color:var(--yellow)"></b></div></div><div class="panel" id="ngInfo"></div></div><div class="panel" id="ngCtl"></div></div>';
 }
 function tnWho() { var S = ui.tn; if (typeof TNF !== 'undefined') { var fkW = tnFk(S); return S.stage === 'fee' ? { n: S.mgr.n, role: 'Manager · ' + S.club.n } : { n: S.ag.n, role: (fkW === 'b3' ? 'Beraterin von ' : 'Berater von ') + S.p.n }; } return S.stage === 'fee' ? { n: S.mgr.n, o: { fem: false, age: S.mgr.age, su: '#3a2a22', acc: S.club.c1 || '#c8302a' }, role: 'Manager · ' + S.club.n } : { n: S.ag.n, o: { fem: false, age: S.ag.age, glasses: 'sun', chain: true, su: '#1b1b1f', acc: '#e8c04a', hs: 'slick' }, role: 'Berater von ' + S.p.n }; }
@@ -11256,8 +11256,8 @@ function kzRun() {
   if (Z.step === 'live') { try { SND.crowd(true); } catch (e2) { } if (KZT) clearTimeout(KZT); var i0 = Z.ei; KZT = setTimeout(function () { KZT = null; if (ui.view === 'konzert' && ui.kz === Z && Z.step === 'live' && Z.ei === i0) kzEv('t'); }, 12000); }
 }
 function vKonzert() {
-  var Z = ui.kz; if (!Z) return sub('Stadion-Konzert') + '<div class="panel"><p class="hint" style="margin:0">Kein Konzert geplant.</p></div>';
-  var h = sub('Stadion-Konzert'), cap = FM.capEff(state);
+  var Z = ui.kz; if (!Z) return sub('Konzert') + '<div class="panel"><p class="hint" style="margin:0">Kein Konzert geplant.</p></div>';
+  var h = sub('Konzert'), cap = FM.capEff(state);
   if (Z.step === 'pick') {
     h += heroPic('konzert_tag', 'Bühnenaufbau im leeren Stadion bei Abendsonne', 108);
     h += '<div class="panel"><p class="lbl">EIN ABEND, DER GELD BRINGT</p><p style="margin:0">Drei Veranstalter wollen dein Stadion für einen Konzertabend mieten. Jeder verhandelt nur ein einziges Mal – platzt das Gespräch, ist er weg. Du verhandelst die Miete, planst den Abend und triffst am Abend selbst die Entscheidungen. Ein Konzert pro Saison.</p></div>';
